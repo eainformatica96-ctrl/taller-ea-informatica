@@ -3,112 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Repuestos</title>
+    <title>Buscador de Repuestos</title>
     <script src="productos.js"></script>
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg: #f8fafc;
-            --text: #1e293b;
-        }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; }
-        header { text-align: center; margin-bottom: 30px; }
-        
-        /* Buscador y Filtros */
-        .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        #buscador { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; min-width: 250px; }
-        #filtroCat { padding: 12px; border-radius: 8px; border: 1px solid #ddd; }
-
-        /* Tabla de Productos */
-        .tabla-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 15px; border-bottom: 1px solid #eee; }
-        th { background: var(--primary); color: white; text-transform: uppercase; font-size: 0.85rem; }
-        tr:hover { background: #f1f5f9; }
-        .precio { font-weight: bold; color: #059669; }
-        .categoria { font-size: 0.75rem; background: #e2e8f0; padding: 4px 8px; border-radius: 4px; }
-
-        @media (max-width: 600px) {
-            th:nth-child(1), td:nth-child(1) { display: none; } /* Oculta código en móviles */
-        }
+        body { font-family: sans-serif; padding: 20px; background: #f4f7f6; color: #333; }
+        .container { max-width: 900px; margin: auto; }
+        input { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
+        .producto { background: white; padding: 15px; margin-top: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .info { flex: 1; }
+        .nombre { font-weight: bold; display: block; margin-bottom: 5px; }
+        .codigo { color: #888; font-size: 0.8em; }
+        .precio { color: #27ae60; font-weight: bold; font-size: 1.2em; margin-left: 15px; }
+        .error { color: red; text-align: center; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>Catálogo de Repuestos</h1>
-    </header>
-
-    <div class="controls">
-        <input type="text" id="buscador" placeholder="Buscar por modelo o repuesto (ej: Moto G8)...">
-        <select id="filtroCat">
-            <option value="TODOS">Todas las categorías</option>
-            <option value="PLACAS">Placas de Carga</option>
-            <option value="LENTES">Lentes de Cámara</option>
-            <option value="MODULOS">Módulos</option>
-            <option value="BATERIAS">Baterías</option>
-            <option value="TAPAS">Tapas</option>
-            <option value="FLEX">Flex</option>
-        </select>
-    </div>
-
-    <div class="tabla-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Cod</th>
-                    <th>Categoría</th>
-                    <th>Producto</th>
-                    <th>Precio</th>
-                </tr>
-            </thead>
-            <tbody id="listaProductos">
-                </tbody>
-        </table>
-    </div>
+    <h1>Mi Inventario</h1>
+    <input type="text" id="buscador" placeholder="Escribe modelo o repuesto (ej: Moto G8)...">
+    <div id="resultados"></div>
 </div>
 
 <script>
-    const tabla = document.getElementById('listaProductos');
-    const buscador = document.getElementById('buscador');
-    const filtroCat = document.getElementById('filtroCat');
-
-    // Función para renderizar la tabla
-    function mostrarProductos(filtroNombre = "", filtroCategoria = "TODOS") {
-        tabla.innerHTML = "";
+    // Esta función limpia y normaliza los datos del proveedor
+    const productosLimpios = db.map(item => {
+        // Buscamos cuál de las propiedades tiene el nombre del producto
+        // (ya que el proveedor usa nombres de columnas largos)
+        const keys = Object.keys(item);
         
-        // Filtramos el array 'db' que viene de productos.js
-        const filtrados = db.filter(p => {
-            const coincideNombre = p.nombre.toLowerCase().includes(filtroNombre.toLowerCase());
-            const coincideCat = filtroCategoria === "TODOS" || p.cat === filtroCategoria;
-            return coincideNombre && coincideCat;
-        });
+        // Intentamos extraer el precio y limpiarlo
+        let precioSucio = item[" PRECIO"] || item["PRECIO"] || "";
+        let precioLimpio = parseFloat(precioSucio.replace(/[$. ]/g, "")) || 0;
 
-        filtrados.forEach(p => {
-            const fila = `
-                <tr>
-                    <td>${p.cod}</td>
-                    <td><span class="categoria">${p.cat}</span></td>
-                    <td>${p.nombre}</td>
-                    <td class="precio">$${p.precio.toLocaleString('es-AR')}</td>
-                </tr>
+        return {
+            cod: item["COD"] || item["cod"] || "N/A",
+            // Tomamos el valor de la segunda columna como nombre del producto
+            nombre: item[keys[1]] || "Sin nombre", 
+            precio: precioLimpio
+        };
+    });
+
+    const buscador = document.getElementById('buscador');
+    const divResultados = document.getElementById('resultados');
+
+    function filtrar() {
+        const texto = buscador.value.toLowerCase();
+        divResultados.innerHTML = '';
+
+        const filtrados = productosLimpios.filter(p => 
+            p.nombre.toLowerCase().includes(texto) || 
+            p.cod.toString().includes(texto)
+        );
+
+        // Limitamos a 50 resultados para que no explote el navegador
+        filtrados.slice(0, 50).forEach(p => {
+            divResultados.innerHTML += `
+                <div class="producto">
+                    <div class="info">
+                        <span class="nombre">${p.nombre}</span>
+                        <span class="codigo">Cód: ${p.cod}</span>
+                    </div>
+                    <div class="precio">$${p.precio.toLocaleString('es-AR')}</div>
+                </div>
             `;
-            tabla.innerHTML += fila;
         });
 
-        if(filtrados.length === 0) {
-            tabla.innerHTML = `<tr><td colspan="4" style="text-align:center">No se encontraron productos.</td></tr>`;
+        if (filtrados.length === 0) {
+            divResultados.innerHTML = '<p class="error">No se encontró nada.</p>';
         }
     }
 
-    // Eventos para búsqueda en tiempo real
-    buscador.addEventListener('input', () => mostrarProductos(buscador.value, filtroCat.value));
-    filtroCat.addEventListener('change', () => mostrarProductos(buscador.value, filtroCat.value));
-
-    // Carga inicial
-    document.addEventListener('DOMContentLoaded', () => mostrarProductos());
+    buscador.addEventListener('input', filtrar);
+    // Mostrar todo al principio
+    filtrar();
 </script>
 
 </body>
