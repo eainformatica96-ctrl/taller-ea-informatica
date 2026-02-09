@@ -28,8 +28,7 @@
         .info-calidad { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--main-blue); border-radius: 10px; padding: 12px; font-size: 0.85rem; margin-bottom: 15px; }
         .badge-final { background: #4caf50; color: white; padding: 2px 8px; border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 5px; }
         
-        /* Etiquetas de formulario */
-        label { font-size: 0.85rem; color: var(--main-blue); margin-bottom: 4px; font-weight: bold; display: block; }
+        label { font-size: 0.85rem; color: var(--main-blue); margin-bottom: 4px; font-weight: bold; display: block; margin-top: 10px; }
         .form-control, .form-select { background-color: #111 !important; color: white !important; border: 1px solid #444 !important; }
     </style>
 </head>
@@ -57,10 +56,10 @@
         
         <div id="box-garantia" class="info-calidad hidden">
             <b>💡 Calidades:</b> • <b>Incell:</b> Sin Garantía. • <b>Oled:</b> 3 Meses.
-            <br><span class="badge-final">✅ PRECIO FINAL (Repuesto + Mano de Obra)</span>
+            <br><span class="badge-final">✅ PRECIO FINAL (Mano de Obra incluida)</span>
         </div>
 
-        <input type="text" id="searchInput" class="form-control mb-3" oninput="filterProducts()">
+        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Escriba el modelo..." oninput="filterProducts()">
         <div id="productList" class="list-group"></div>
     </div>
 
@@ -71,10 +70,10 @@
             <p id="resumen-equipo" class="text-info small mb-3"></p>
             
             <label>Nombre del Cliente:</label>
-            <input type="text" id="clienteNombre" class="form-control mb-3" placeholder="Ej: Juan Pérez">
+            <input type="text" id="clienteNombre" class="form-control mb-2" placeholder="Ej: Juan Pérez">
             
             <label>Tipo de Seguridad:</label>
-            <select id="tipoClave" class="form-select mb-3" onchange="toggleClave()">
+            <select id="tipoClave" class="form-select mb-2" onchange="toggleClave()">
                 <option value="Sin Clave">Sin Clave</option>
                 <option value="PIN">PIN / Contraseña</option>
                 <option value="Patron">Patrón de Dibujo</option>
@@ -82,18 +81,18 @@
 
             <div id="div-pin" class="hidden">
                 <label>Escriba la Clave:</label>
-                <input type="text" id="valPin" class="form-control mb-3">
+                <input type="text" id="valPin" class="form-control mb-2">
             </div>
 
             <div id="div-patron" class="hidden text-center">
                 <label>Dibuje el Patrón:</label>
                 <div id="patternContainer"></div>
-                <label>Referencia Visual (Opcional):</label>
-                <input type="text" id="valPatronDesc" class="form-control mb-3" placeholder="Ej: Una L empezando arriba">
+                <label>Referencia Visual:</label>
+                <input type="text" id="valPatronDesc" class="form-control mb-2" placeholder="Ej: Una L">
             </div>
 
-            <label>Detalles o Fallas:</label>
-            <textarea id="detalles" class="form-control mb-3" rows="2" placeholder="Ej: No carga, se calienta..."></textarea>
+            <label>Fallas o Detalles:</label>
+            <textarea id="detalles" class="form-control mb-2" rows="2" placeholder="Ej: Rayado, no prende..."></textarea>
             
             <label>Método de Pago:</label>
             <select id="metodoPago" class="form-select mb-3">
@@ -101,7 +100,7 @@
                 <option value="Transferencia">Transferencia</option>
             </select>
 
-            <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold py-3 mt-2">ENVIAR A WHATSAPP</button>
+            <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold py-3">ENVIAR A WHATSAPP</button>
         </div>
     </div>
 </div>
@@ -112,14 +111,26 @@
 <script>
     let currentCat = '', selectedProd = '', selectedPrice = '', lock;
 
+    // --- FÓRMULAS CORREGIDAS ---
     function calcularPrecioFinal(base, nombre, cat) {
         if (cat === 'MODULOS') {
             const costoEnvio = 15000;
+            // Si es iPhone 50k, si es otro bajó a 10k por tu pedido
             const manoObra = nombre.toLowerCase().includes('iph') ? 50000 : 10000; 
             return Math.round((base + costoEnvio) * 2 + manoObra).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        // Baterías y Otros: (Base + 5000) * 2 + 5000 mano de obra
-        return Math.round((base + 5000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        
+        if (cat === 'BATERIAS') {
+            // Fórmula para Baterías: (Costo + 5000 envío) * 2 + 5000 mano obra
+            return Math.round((base + 5000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        }
+
+        if (cat === 'PARTES CHICAS') {
+            // Fórmula para Pines/Cámaras: (Costo + 3000) * 2 + 8000 mano obra
+            return Math.round((base + 3000) * 2 + 8000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        }
+        
+        return base.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
     }
 
     function showStep(s) {
@@ -129,9 +140,8 @@
 
     function chooseCategory(cat) {
         currentCat = cat;
-        document.getElementById('cat-selected').innerText = cat;
+        document.getElementById('cat-selected').innerText = "Sección: " + cat;
         document.getElementById('box-garantia').classList.toggle('hidden', cat !== 'MODULOS');
-        document.getElementById('searchInput').placeholder = `Buscar en ${cat}...`;
         document.getElementById('searchInput').value = '';
         showStep(2);
         filterProducts();
@@ -144,19 +154,13 @@
 
         if (currentCat === 'SOFTWARE') {
             document.getElementById('searchInput').classList.add('hidden');
-            const opcionesSoft = [
-                ["Sistema Operativo / Flasheo", "20.000"],
-                ["Cuenta Google (FRP)", "35.000"],
-                ["Eliminar Patrón / PIN", "20.000"],
-                ["Eliminar Virus Publicitario", "5.000"]
+            const soft = [
+                ["Sistema Operativo / Flasheo", "$20.000"],
+                ["Cuenta Google (FRP)", "$35.000"],
+                ["Eliminar Patrón / PIN", "$20.000"],
+                ["Eliminar Virus Publicitario", "$5.000"]
             ];
-            opcionesSoft.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'btn-cat d-flex justify-content-between align-items-center px-3';
-                btn.innerHTML = `<span>${opt[0]}</span><span class="price-tag">$${opt[1]}</span>`;
-                btn.onclick = () => selectManual(opt[0], "$"+opt[1]);
-                lista.appendChild(btn);
-            });
+            soft.forEach(s => addBtn(s[0], s[1], true));
             return;
         }
 
@@ -164,42 +168,44 @@
 
         // Pin Universal Manual
         if (currentCat === 'PARTES CHICAS' && (bus === '' || "pin universal".includes(bus))) {
-            addBtnList("Pin de Carga Universal", "$30.000");
+            addBtn("Pin de Carga Universal", "$30.000", false);
         }
 
-        // BÚSQUEDA SÚPER FLEXIBLE:
-        // Buscamos la primera parte de la categoría (ej: "BATERIAS" -> "BATERI") por si en el JS dice "BATERIA"
-        const catReducida = currentCat.substring(0, 6).toLowerCase();
-
+        // --- BÚSQUEDA INTELIGENTE EN EL JS ---
+        // Filtramos por el nombre del modelo. Como tu JS no tiene categorías, 
+        // dejamos que el usuario busque el modelo y le aplicamos la fórmula de la sección elegida.
         const filtrados = db.filter(item => {
-            const filaStr = Object.values(item).join(" ").toLowerCase();
-            return filaStr.includes(catReducida) && filaStr.includes(bus);
+            const rowStr = Object.values(item).join(" ").toLowerCase();
+            return rowStr.includes(bus);
         });
 
         filtrados.forEach(item => {
             const fila = Object.values(item);
-            const nombreProd = fila[1];
+            const nombre = fila[1];
             const precioRaw = fila[fila.length - 1].toString();
             const precioBase = parseFloat(precioRaw.replace(/[$. ]/g, "")) || 0;
-            const final = calcularPrecioFinal(precioBase, nombreProd, currentCat);
-            addBtnList(nombreProd, final);
+            
+            const final = calcularPrecioFinal(precioBase, nombre, currentCat);
+            addBtn(nombre, final, false);
         });
     }
 
-    function addBtnList(nombre, precio) {
-        const btn = document.createElement('button');
-        btn.className = 'list-group-item list-group-item-action p-3';
-        btn.innerHTML = `<div class="d-flex justify-content-between align-items-center"><span>${nombre}</span><span class="price-tag">${precio}</span></div>`;
-        btn.onclick = () => selectManual(nombre, precio);
-        document.getElementById('productList').appendChild(btn);
-    }
-
-    function selectManual(nombre, precio) {
-        selectedProd = nombre; selectedPrice = precio;
-        document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Precio Final: ${precio}</b>`;
-        showStep(3);
-        if(!lock) lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 });
-        else lock.reset();
+    function addBtn(nombre, precio, esEstiloMenu) {
+        const item = document.createElement('button');
+        if(esEstiloMenu) {
+            item.className = 'btn-cat d-flex justify-content-between align-items-center px-3';
+        } else {
+            item.className = 'list-group-item list-group-item-action p-3';
+        }
+        item.innerHTML = `<span>${nombre}</span><span class="price-tag">${precio}</span>`;
+        item.onclick = () => {
+            selectedProd = nombre; selectedPrice = precio;
+            document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Presupuesto Final: ${precio}</b>`;
+            showStep(3);
+            if(!lock) lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 });
+            else lock.reset();
+        };
+        document.getElementById('productList').appendChild(item);
     }
 
     function toggleClave() {
@@ -210,7 +216,7 @@
 
     function enviarWhatsApp() {
         const cliente = document.getElementById('clienteNombre').value;
-        if(!cliente) { alert("Nombre del cliente obligatorio"); return; }
+        if(!cliente) { alert("Ingresa el nombre del cliente"); return; }
         const tipoC = document.getElementById('tipoClave').value;
         let claveInfo = (tipoC === 'PIN') ? document.getElementById('valPin').value : (tipoC === 'Patron') ? "Patrón ("+document.getElementById('valPatronDesc').value+")" : "Sin clave";
         const msj = `*EA-INFORMATICA*%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Presupuesto:* ${selectedPrice}%0A🔑 *Seguridad:* ${claveInfo}%0A📝 *Falla:* ${document.getElementById('detalles').value}%0A💳 *Pago:* ${document.getElementById('metodoPago').value}`;
