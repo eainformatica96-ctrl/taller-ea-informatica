@@ -13,7 +13,7 @@
         .header-box { text-align: center; padding: 15px; }
         .logo-img { max-width: 90px; border-radius: 15px; border: 2px solid var(--main-blue); }
         .title { font-family: 'Orbitron', sans-serif; color: var(--main-blue); margin-top: 10px; }
-        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-weight: bold; width: 100%; transition: 0.3s; }
+        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-weight: bold; width: 100%; transition: 0.3s; height: 100%; }
         .btn-cat:hover { border-color: var(--main-blue); background: #222; }
         .hidden { display: none; }
         .info-calidad { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--main-blue); border-radius: 10px; padding: 15px; margin-bottom: 15px; font-size: 0.9rem; }
@@ -32,22 +32,23 @@
     </div>
 
     <div id="step-1">
-        <h5 class="mb-3">Seleccione el servicio:</h5>
+        <h5 class="mb-3 text-center">Seleccione el servicio:</h5>
         <div class="row g-2">
             <div class="col-6"><button class="btn-cat" onclick="chooseCategory('MODULOS')">📱 Módulos</button></div>
             <div class="col-6"><button class="btn-cat" onclick="chooseCategory('TAPAS')">📲 Tapas</button></div>
             <div class="col-6"><button class="btn-cat" onclick="chooseCategory('PLACAS')">🔌 Placas Carga</button></div>
             <div class="col-6"><button class="btn-cat" onclick="chooseCategory('LENTES')">📷 Lentes Cam.</button></div>
+            <div class="col-12"><button class="btn-cat" onclick="chooseCategory('SOFTWARE')">💻 Software / Cuentas</button></div>
         </div>
     </div>
 
     <div id="step-2" class="hidden">
         <button class="btn btn-sm text-secondary mb-2" onclick="showStep(1)">← Volver</button>
         <div class="info-calidad">
-            <b>Información:</b> Precios actualizados según proveedor.<br>
+            <b id="cat-title">Categoría</b><br>
             <div class="badge-final">✅ PRECIO FINAL (Repuesto + Mano de Obra)</div>
         </div>
-        <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Buscar modelo (Ej: A02, S23, G42...)" oninput="filterProducts()">
+        <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Buscar modelo..." oninput="filterProducts()">
         <div id="productList" class="list-group"></div>
     </div>
 
@@ -62,7 +63,7 @@
                 <option value="Patron">Patrón</option>
             </select>
             <div id="div-patron" class="hidden text-center"><div id="patternContainer"></div></div>
-            <textarea id="detalles" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Fallas detectadas / Observaciones"></textarea>
+            <textarea id="detalles" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Fallas detectadas"></textarea>
             <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold">ENVIAR ORDEN</button>
         </div>
     </div>
@@ -73,7 +74,7 @@
 <script>
     let currentCat = '', selectedProd = '', selectedPrice = '', lock;
 
-    // FÓRMULA DE COSTOS
+    // TUS FÓRMULAS ORIGINALES
     function calcularPrecioFinal(base, nombre, cat) {
         let total = 0;
         if (cat === 'MODULOS') {
@@ -81,6 +82,7 @@
             const manoObra = nombre.toLowerCase().includes('iph') ? 50000 : 25000;
             total = (base + costoEnvio) * 2 + manoObra;
         } else {
+            // FÓRMULA PARA TAPAS, PLACAS, LENTES Y SOFTWARE
             total = (base + 5000) * 2 + 8000; 
         }
         return Math.round(total).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
@@ -88,37 +90,30 @@
 
     function chooseCategory(cat) {
         currentCat = cat;
+        document.getElementById('cat-title').innerText = "Servicio: " + cat;
         document.getElementById('searchInput').value = '';
         showStep(2);
         filterProducts();
     }
 
-    // BUSQUEDA INTELIGENTE ADAPTADA A EXCEL SUCIO
     function filterProducts() {
         const bus = document.getElementById('searchInput').value.toLowerCase();
         const lista = document.getElementById('productList');
         lista.innerHTML = '';
         
-        // El secreto: usamos Object.values() para que no importen los nombres de las columnas
+        // Búsqueda inteligente en cualquier columna del JSON
         const filtrados = db.filter(item => {
             const valores = Object.values(item);
-            
-            // Verificamos si la fila contiene la categoría (buscando en los valores)
             const coincideCat = valores.some(v => v.toString().toUpperCase().includes(currentCat));
-            // Verificamos si coincide el modelo escrito
             const coincideBus = valores.some(v => v.toString().toLowerCase().includes(bus));
-            
             return coincideCat && coincideBus;
         });
         
         filtrados.forEach(item => {
             const valores = Object.values(item);
-            
-            // Mapeo por posición para evitar errores de nombres con espacios
             const nombreProd = valores[1] || "Sin nombre";
-            
-            // Limpieza del precio: quita $, puntos y espacios para poder calcular
             const precioTexto = valores[valores.length - 1].toString();
+            // Limpia $ y puntos para que la fórmula matemática funcione
             const precioBase = parseFloat(precioTexto.replace(/[$. ]/g, "")) || 0;
 
             const final = calcularPrecioFinal(precioBase, nombreProd, currentCat);
@@ -149,11 +144,7 @@
     }
 
     function enviarWhatsApp() {
-        const nombre = document.getElementById('clienteNombre').value;
-        const clave = document.getElementById('tipoClave').value;
-        const obs = document.getElementById('detalles').value;
-        
-        const msj = `*EA-INFORMATICA*%0A*Cliente:* ${nombre}%0A*Equipo:* ${selectedProd}%0A*Presupuesto:* ${selectedPrice}%0A*Clave:* ${clave}%0A*Detalles:* ${obs}`;
+        const msj = `*EA-INFORMATICA*%0A*Cliente:* ${document.getElementById('clienteNombre').value}%0A*Equipo:* ${selectedProd}%0A*Presupuesto:* ${selectedPrice}`;
         window.open(`https://wa.me/5493854416248?text=${msj}`, '_blank');
     }
 </script>
