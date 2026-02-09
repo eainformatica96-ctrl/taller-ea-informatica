@@ -11,46 +11,62 @@
     <style>
         :root { --main-blue: #00d4ff; --bg-dark: #0a0a0a; --card-bg: #1a1a1a; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
-        .header-box { text-align: center; padding: 20px; }
-        .logo-img { max-width: 120px; border-radius: 20px; border: 2px solid var(--main-blue); margin-bottom: 10px; }
-        .title { font-family: 'Orbitron', sans-serif; color: var(--main-blue); font-size: 1.5rem; }
+        .header-box { text-align: center; padding: 15px; }
+        .logo-img { max-width: 90px; border-radius: 15px; border: 2px solid var(--main-blue); margin-bottom: 5px; }
+        .title { font-family: 'Orbitron', sans-serif; color: var(--main-blue); font-size: 1.2rem; }
         
-        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; padding: 20px; border-radius: 15px; transition: 0.3s; margin-bottom: 10px; }
+        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; transition: 0.3s; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; }
         .btn-cat:hover { border-color: var(--main-blue); background: #222; }
 
         .list-group-item { background: var(--card-bg); color: white; border: 1px solid #333; margin-bottom: 5px; border-radius: 10px !important; }
         
-        /* Ajuste del Patrón para que sea 3x3 */
-        #patternContainer { margin: 20px auto; width: 300px !important; height: 300px !important; background: #222; border-radius: 15px; border: 2px solid var(--main-blue); }
-        .patt-holder { width: 100% !important; height: 100% !important; }
+        #patternContainer { 
+            margin: 10px auto; 
+            width: 280px !important; 
+            height: 280px !important; 
+            background: #222; 
+            border-radius: 15px; 
+            border: 2px solid var(--main-blue);
+            touch-action: none;
+        }
+        .patt-holder { width: 100% !important; height: 100% !important; position: relative !important; }
+        .patt-wrap { position: relative !important; width: 100% !important; height: 100% !important; }
 
         .hidden { display: none; }
-        .step-title { border-left: 4px solid var(--main-blue); padding-left: 10px; margin: 20px 0; font-size: 1.1rem; }
-        .price-tag { color: var(--main-blue); font-weight: bold; font-size: 1.2rem; }
+        .step-title { border-left: 4px solid var(--main-blue); padding-left: 10px; margin: 15px 0; font-size: 1rem; }
+        .price-tag { color: var(--main-blue); font-weight: bold; font-size: 1rem; }
+        .info-calidad { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--main-blue); border-radius: 10px; padding: 10px; font-size: 0.8rem; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-<div class="container py-3">
+<div class="container py-2" style="max-width: 450px;">
     <div class="header-box">
         <img src="https://raw.githubusercontent.com/eainformatica96-ctrl/Taller-EA-Informatica/main/Taller.png" alt="Logo" class="logo-img">
         <h2 class="title">EA-INFORMATICA</h2>
     </div>
 
     <div id="step-1">
-        <h5 class="step-title">Seleccione un servicio</h5>
+        <h5 class="step-title">¿Qué servicio necesitas?</h5>
         <div class="row g-2">
             <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('MODULOS')">📱 Módulos</button></div>
-            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('BATERIAS')">🔋 Baterías</button></div>
-            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('PARTES')">🔌 Partes Chicas</button></div>
+            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('TAPAS')">📲 Tapas</button></div>
+            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('PLACAS')">🔌 Placas Carga</button></div>
+            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('LENTES')">📷 Lentes Cam.</button></div>
             <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('SOFTWARE')">💻 Software</button></div>
         </div>
     </div>
 
     <div id="step-2" class="hidden">
-        <button class="btn btn-sm text-secondary mb-3" onclick="showStep(1)">← Volver</button>
+        <button class="btn btn-sm text-secondary mb-2" onclick="showStep(1)">← Volver</button>
         <h5 id="cat-selected" class="step-title"></h5>
         
+        <div id="info-modulos" class="info-calidad hidden">
+            <b>💡 Calidades:</b><br>
+            • <b>Incell:</b> Regular (Sin Garantía).<br>
+            • <b>Oled/Original:</b> Máxima (3 Meses Garantía).
+        </div>
+
         <div id="search-area">
             <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Ej: A02, S20, G8..." onkeyup="filterProducts()">
         </div>
@@ -59,100 +75,104 @@
     </div>
 
     <div id="step-3" class="hidden">
-        <button class="btn btn-sm text-secondary mb-3" onclick="showStep(2)">← Volver</button>
-        <h5 class="step-title">Finalizar Orden</h5>
-        
+        <button class="btn btn-sm text-secondary mb-2" onclick="showStep(2)">← Volver</button>
+        <h5 class="step-title">Datos de la Orden</h5>
         <div class="card bg-dark border-secondary p-3">
-            <p class="mb-3 text-info" id="resumen-equipo"></p>
+            <p id="resumen-equipo" class="text-info small mb-3"></p>
+            <input type="text" id="clienteNombre" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Nombre del Cliente">
             
-            <label class="small text-secondary">Nombre del Cliente</label>
-            <input type="text" id="clienteNombre" class="form-control bg-dark text-white border-secondary mb-3">
-
-            <label class="small text-secondary">Seguridad</label>
             <select id="tipoClave" class="form-select bg-dark text-white border-secondary mb-3" onchange="toggleClave()">
                 <option value="Sin Clave">Sin Clave</option>
-                <option value="PIN">PIN o Contraseña</option>
+                <option value="PIN">PIN / Contraseña</option>
                 <option value="Patron">Patrón de Dibujo</option>
             </select>
 
             <div id="div-pin" class="hidden"><input type="text" id="valPin" class="form-control mb-3" placeholder="Escriba la clave"></div>
             <div id="div-patron" class="hidden text-center">
                 <div id="patternContainer"></div>
-                <input type="text" id="valPatronDesc" class="form-control mb-3" placeholder="Aclaración (ej: Una L)">
+                <input type="text" id="valPatronDesc" class="form-control mb-3" placeholder="Aclaración (Ej: Una L)">
             </div>
 
-            <label class="small text-secondary">Detalles/Fallas</label>
-            <textarea id="detalles" class="form-control bg-dark text-white border-secondary mb-3" rows="2"></textarea>
-
-            <label class="small text-secondary">Método de Pago</label>
+            <textarea id="detalles" class="form-control bg-dark text-white border-secondary mb-3" rows="2" placeholder="Fallas o detalles del equipo"></textarea>
+            
             <select id="metodoPago" class="form-select bg-dark text-white border-secondary mb-3">
                 <option value="Efectivo">Efectivo</option>
                 <option value="Transferencia">Transferencia</option>
             </select>
-
-            <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold py-3">ENVIAR POR WHATSAPP</button>
+            <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold py-3">ENVIAR A WHATSAPP</button>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/patternlock@2.0.2/dist/patternlock.min.js"></script>
 <script>
-    // BASE DE DATOS (Muestra)
     const db = [
-        { cat: 'MODULOS', nombre: 'Samsung A02 (Incell)', precio: 8500 },
-        { cat: 'MODULOS', nombre: 'Samsung A32 4G (Oled)', precio: 15200 },
-        { cat: 'MODULOS', nombre: 'iPhone 11 (Incell)', precio: 12000 },
-        { cat: 'BATERIAS', nombre: 'Motorola G8 Power', precio: 4500 }
+        // MÓDULOS (Tus datos anteriores)
+        { cat: 'MODULOS', nombre: 'SM A01 CORE ORIG', precio: 14999 },
+        { cat: 'MODULOS', nombre: 'SM A15 OLED 4G/5G', precio: 59999 },
+        // PLACAS DE CARGA (Nuevos datos)
+        { cat: 'PLACAS', nombre: 'PLACA IPH 16 ORIG', precio: 41199 },
+        { cat: 'PLACAS', nombre: 'PLACA IPH 15 PRO MAX ORIG', precio: 31099 },
+        { cat: 'PLACAS', nombre: 'PLACA SAMS S24 ULTRA ORIG', precio: 24399 },
+        { cat: 'PLACAS', nombre: 'PLACA SAMS S23 ULTRA', precio: 18399 },
+        { cat: 'PLACAS', nombre: 'PLACA MOTO EDGE 50 PRO ORIG', precio: 10599 },
+        { cat: 'PLACAS', nombre: 'PLACA MOTO G75 ORIG', precio: 7099 },
+        { cat: 'PLACAS', nombre: 'PLACA XI REDMI NOTE 13 PRO ORIG', precio: 4899 },
+        { cat: 'PLACAS', nombre: 'PLACA SAMS A10', precio: 1899 },
+        { cat: 'PLACAS', nombre: 'PLACA MOTO G3', precio: 799 },
+        // LENTES DE CÁMARA (Nuevos datos)
+        { cat: 'LENTES', nombre: 'LENTE IPH 12 PRO MAX', precio: 5399 },
+        { cat: 'LENTES', nombre: 'LENTE SAMS S23 ULTRA', precio: 4199 },
+        { cat: 'LENTES', nombre: 'LENTE XI REDMI NOTE 11', precio: 4199 },
+        { cat: 'LENTES', nombre: 'LENTE TCL 20E', precio: 6799 },
+        { cat: 'LENTES', nombre: 'LENTE MOTO G54', precio: 3999 },
+        // TAPAS
+        { cat: 'TAPAS', nombre: 'TAPA IPH 11 BLANCA', precio: 5699 },
+        { cat: 'TAPAS', nombre: 'TAPA SM A10 NEGRA', precio: 4699 }
     ];
 
     let currentCat = '', selectedProd = '', selectedPrice = '', lock;
 
-    function calcularPrecioFinal(base, nombre) {
+    function calcularPrecioFinal(base, nombre, cat) {
+        if (cat === 'TAPAS' || cat === 'LENTES') {
+            return Math.round((base + 3000) * 2).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        }
+        if (cat === 'PLACAS') {
+            return Math.round((base + 4000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        }
         const costoEnvio = 15000;
-        const manoObraOtros = 20000;
-        const manoObraIphone = 50000;
-        const esIphone = nombre.toLowerCase().includes('iphone');
-        
-        let total = (base + costoEnvio) * 2;
-        total += (esIphone) ? manoObraIphone : manoObraOtros;
+        const manoObra = nombre.toLowerCase().includes('iph') ? 50000 : 20000;
+        let total = (base + costoEnvio) * 2 + manoObra;
         return total.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
     }
 
     function showStep(s) {
-        document.getElementById('step-1').classList.add('hidden');
-        document.getElementById('step-2').classList.add('hidden');
-        document.getElementById('step-3').classList.add('hidden');
+        document.querySelectorAll('[id^="step-"]').forEach(el => el.classList.add('hidden'));
         document.getElementById('step-'+s).classList.remove('hidden');
     }
 
     function chooseCategory(cat) {
         currentCat = cat;
         document.getElementById('cat-selected').innerText = cat;
-        document.getElementById('search-area').classList.toggle('hidden', cat === 'SOFTWARE');
+        document.getElementById('info-modulos').classList.toggle('hidden', cat !== 'MODULOS');
         showStep(2);
         filterProducts();
     }
 
     function filterProducts() {
-        const busqueda = document.getElementById('searchInput').value.toLowerCase();
+        const bus = document.getElementById('searchInput').value.toLowerCase();
         const lista = document.getElementById('productList');
         lista.innerHTML = '';
 
-        if (currentCat === 'PARTES') {
-            addBtnManual("Pin de Carga Universal", "$30.000");
-        }
-
         if (currentCat === 'SOFTWARE') {
-            addBtnManual("Cambio de Sistema Operativo", "$30.000");
-            addBtnManual("Eliminar cuenta Google", "$40.000");
-            addBtnManual("Eliminar Patron/Pin", "$20.000");
-            addBtnManual("Eliminar virus de publicidad", "$10.000");
+            addBtnManual("Sistema Operativo", "$30.000");
+            addBtnManual("Cuenta Google", "$40.000");
             return;
         }
 
-        const filtrados = db.filter(p => p.cat === currentCat && p.nombre.toLowerCase().includes(busqueda));
+        const filtrados = db.filter(p => p.cat === currentCat && p.nombre.toLowerCase().includes(bus));
         filtrados.forEach(p => {
-            const precioVenta = calcularPrecioFinal(p.precio, p.nombre);
+            const precioVenta = calcularPrecioFinal(p.precio, p.nombre, p.cat);
             addBtnManual(p.nombre, precioVenta);
         });
     }
@@ -160,15 +180,13 @@
     function addBtnManual(nombre, precio) {
         const item = document.createElement('button');
         item.className = 'list-group-item list-group-item-action p-3';
-        item.innerHTML = `<div class="d-flex justify-content-between align-items-center">
-            <span>${nombre}</span> <span class="price-tag">${precio}</span>
-        </div>`;
+        item.innerHTML = `<div class="d-flex justify-content-between"><span>${nombre}</span><span class="price-tag">${precio}</span></div>`;
         item.onclick = () => {
-            selectedProd = nombre;
-            selectedPrice = precio;
-            document.getElementById('resumen-equipo').innerHTML = `<b>Equipo:</b> ${nombre}<br><b>Presupuesto:</b> ${precio}`;
+            selectedProd = nombre; selectedPrice = precio;
+            document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Presupuesto: ${precio}</b>`;
             showStep(3);
-            if(!lock) lock = new PatternLock("#patternContainer");
+            if(!lock) lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 });
+            else lock.reset();
         };
         document.getElementById('productList').appendChild(item);
     }
@@ -180,23 +198,12 @@
     }
 
     function enviarWhatsApp() {
-        const tel = "5493854416248";
         const cliente = document.getElementById('clienteNombre').value;
+        if(!cliente) { alert("Nombre del cliente?"); return; }
         const tipoC = document.getElementById('tipoClave').value;
-        const det = document.getElementById('detalles').value;
-        const pago = document.getElementById('metodoPago').value;
-        let claveInfo = (tipoC === 'PIN') ? document.getElementById('valPin').value : 
-                        (tipoC === 'Patron') ? "Dibujado (Obs: "+document.getElementById('valPatronDesc').value+")" : "No tiene";
-
-        const msj = `*EA-INFORMATICA - ORDEN*%0A%0A` +
-                    `👤 *Cliente:* ${cliente}%0A` +
-                    `📱 *Equipo:* ${selectedProd}%0A` +
-                    `💰 *Presupuesto:* ${selectedPrice}%0A` +
-                    `🔑 *Seguridad:* ${claveInfo}%0A` +
-                    `📝 *Falla:* ${det}%0A` +
-                    `💳 *Pago:* ${pago}`;
-
-        window.open(`https://wa.me/${tel}?text=${msj}`, '_blank');
+        let claveInfo = (tipoC === 'PIN') ? document.getElementById('valPin').value : (tipoC === 'Patron') ? "Patrón dibujado ("+document.getElementById('valPatronDesc').value+")" : "Sin clave";
+        const msj = `*EA-INFORMATICA - ORDEN*%0A%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Presupuesto:* ${selectedPrice}%0A🔑 *Seguridad:* ${claveInfo}%0A📝 *Falla:* ${document.getElementById('detalles').value}%0A💳 *Pago:* ${document.getElementById('metodoPago').value}`;
+        window.open(`https://wa.me/5493854416248?text=${msj}`, '_blank');
     }
 </script>
 </body>
