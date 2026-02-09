@@ -76,20 +76,23 @@
     </div>
 </div>
 
-<script src="productos.js"></script>
+<script src="https://eainformatica96-ctrl.github.io/Taller-EA-Informatica/productos.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/patternlock@2.0.2/dist/patternlock.min.js"></script>
 
 <script>
     let currentCat = '', selectedProd = '', selectedPrice = '', lock;
 
+    // Función para procesar el precio numérico o string del JS
     function calcularPrecioFinal(base, nombre, cat) {
         let n = nombre.toLowerCase();
         let c = cat.toUpperCase();
-        let b = parseFloat(base.toString().replace(/[$. ]/g, "")) || 0;
+        
+        // Limpiamos el precio por si viene con símbolos
+        let b = typeof base === 'number' ? base : parseFloat(base.toString().replace(/[$. ]/g, "")) || 0;
 
         if (c.includes('MODULO')) {
-            const mo = n.includes('iph') ? 50000 : 10000; 
-            return Math.round((b + 15000) * 2 + mo).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+            const extraIphone = n.includes('iph') ? 50000 : 10000; 
+            return Math.round((b + 15000) * 2 + extraIphone).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
         if (c.includes('BATERIA')) {
             return Math.round((b + 5000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
@@ -119,8 +122,8 @@
         lista.innerHTML = '';
 
         if (currentCat === 'SOFTWARE') {
-            const soft = [["Sistema Operativo", "$20.000"],["Cuenta Google", "$35.000"]];
-            soft.forEach(s => addBtn(s[0], s[1], true));
+            const soft = [["Sistema Operativo", 20000],["Cuenta Google", 35000]];
+            soft.forEach(s => addBtn(s[0], s[1].toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }), true));
             return;
         }
 
@@ -131,7 +134,7 @@
 
         // Verificamos si la base de datos cargó
         if (typeof db === 'undefined') {
-            lista.innerHTML = "<div class='text-danger'>Error: productos.js no cargó o no tiene 'const db ='</div>";
+            lista.innerHTML = "<div class='text-danger p-3'>⚠️ No se encontró 'db' en productos.js. Verifica que el archivo en GitHub empiece con 'const db = [...]'</div>";
             return;
         }
 
@@ -155,7 +158,11 @@
             selectedProd = nombre; selectedPrice = precio;
             document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Total: ${precio}</b>`;
             showStep(3);
-            if(!lock) lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 }); else lock.reset();
+            if(!lock) {
+                lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 });
+            } else {
+                lock.reset();
+            }
         };
         document.getElementById('productList').appendChild(item);
     }
@@ -168,8 +175,18 @@
 
     function enviarWhatsApp() {
         const cliente = document.getElementById('clienteNombre').value;
-        if(!cliente) { alert("Nombre obligatorio"); return; }
-        const msj = `*EA-INFORMATICA*%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Precio:* ${selectedPrice}`;
+        const detalles = document.getElementById('detalles').value;
+        const tipoClave = document.getElementById('tipoClave').value;
+        let claveInfo = "";
+
+        if (tipoClave === 'PIN') claveInfo = "🔑 *Clave:* " + document.getElementById('valPin').value;
+        if (tipoClave === 'Patron') claveInfo = "🌀 *Patrón:* (Dibujado)";
+        if (tipoClave === 'Sin Clave') claveInfo = "🔓 Sin Clave";
+
+        if(!cliente) { alert("Por favor, ingresa el nombre del cliente"); return; }
+        
+        const msj = `*EA-INFORMATICA*%0A%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Precio:* ${selectedPrice}%0A${claveInfo}%0A📝 *Detalles:* ${detalles}`;
+        
         window.open(`https://wa.me/5493854416248?text=${msj}`, '_blank');
     }
 </script>
