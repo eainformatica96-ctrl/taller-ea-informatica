@@ -2,78 +2,191 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Prueba de Búsqueda - Taller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Consultas - Taller</title>
     <script src="productos.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; background: #f0f2f5; }
-        .caja-busqueda { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 12px; font-size: 18px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #007bff; color: white; }
-        tr:hover { background-color: #f1f1f1; }
-        .precio-txt { color: #28a745; font-weight: bold; }
+        :root {
+            --primary: #2c3e50;
+            --accent: #e74c3c;
+            --success: #27ae60;
+            --bg: #f8f9fa;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg); 
+            color: #333;
+        }
+
+        /* Encabezado */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* Buscador */
+        .search-box {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            background: white;
+            padding: 15px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 18px;
+            padding: 5px 15px;
+            background: transparent;
+        }
+
+        /* Tabla Estética */
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: #ecf0f1;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #7f8c8d;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f1f1f1;
+            font-size: 16px;
+        }
+
+        .cod-badge {
+            background: #eee;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .price-tag {
+            color: var(--success);
+            font-weight: 800;
+            font-size: 18px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            th:nth-child(1), td:nth-child(1) { display: none; }
+            .price-tag { font-size: 16px; }
+            td { padding: 10px; }
+        }
+
+        .no-results {
+            padding: 40px;
+            text-align: center;
+            color: #95a5a6;
+        }
     </style>
 </head>
 <body>
 
-    <div class="caja-busqueda">
-        <h2>Buscador de Repuestos</h2>
-        <input type="text" id="inputBusqueda" placeholder="Escribe para buscar (ej: ALC 1S)...">
-        
-        <table id="tablaProductos">
-            <thead>
-                <tr>
-                    <th>CÓDIGO</th>
-                    <th>PRODUCTO</th>
-                    <th>PRECIO</th>
-                </tr>
-            </thead>
-            <tbody id="cuerpoTabla">
-                </tbody>
-        </table>
+<header>
+    <h2 style="margin:0">GESTIÓN DE REPUESTOS</h2>
+</header>
+
+<div class="container">
+    <div class="search-box">
+        🔍 <input type="text" id="mainSearch" placeholder="Buscar por modelo, marca o código..." autofocus>
     </div>
 
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Cod</th>
+                    <th>Descripción</th>
+                    <th style="text-align: right;">Precio</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryBody">
+                </tbody>
+        </table>
+        <div id="emptyState" class="no-results" style="display:none">
+            No se encontraron repuestos con ese nombre.
+        </div>
+    </div>
+</div>
+
 <script>
-    const tabla = document.getElementById('cuerpoTabla');
-    const input = document.getElementById('inputBusqueda');
+    const inventoryBody = document.getElementById('inventoryBody');
+    const mainSearch = document.getElementById('mainSearch');
+    const emptyState = document.getElementById('emptyState');
 
-    function buscar() {
-        const termino = input.value.toLowerCase();
-        tabla.innerHTML = "";
-
-        // Filtramos sobre el array 'db' de productos.js
-        const filtrados = db.filter(item => {
-            // Adaptación exacta a tus etiquetas: "COD", "PLACAS DE CARGAS" (o similares) y " PRECIO"
-            // Usamos Object.values para buscar en cualquier columna sin importar el nombre
-            const contenidoFila = Object.values(item).join(" ").toLowerCase();
-            return contenidoFila.includes(termino);
+    function updateView() {
+        const query = mainSearch.value.toLowerCase();
+        inventoryBody.innerHTML = '';
+        
+        const filtered = db.filter(item => {
+            return Object.values(item).some(val => 
+                val && val.toString().toLowerCase().includes(query)
+            );
         });
 
-        filtrados.forEach(item => {
-            const valores = Object.values(item);
-            // valores[0] es el COD
-            // valores[1] es la DESCRIPCIÓN
-            // valores[2] es el PRECIO
-            
-            const fila = `<tr>
-                <td>${valores[0]}</td>
-                <td>${valores[1]}</td>
-                <td class="precio-txt">${valores[2]}</td>
-            </tr>`;
-            tabla.innerHTML += fila;
-        });
-
-        if (filtrados.length === 0) {
-            tabla.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay coincidencias</td></tr>';
+        if (filtered.length > 0) {
+            emptyState.style.display = 'none';
+            filtered.forEach(item => {
+                const vals = Object.values(item);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="cod-badge">${vals[0]}</span></td>
+                    <td><span class="product-name">${vals[1]}</span></td>
+                    <td style="text-align: right;"><span class="price-tag">${vals[vals.length - 1]}</span></td>
+                `;
+                inventoryBody.appendChild(row);
+            });
+        } else {
+            emptyState.style.display = 'block';
         }
     }
 
-    // Escuchar cuando el usuario escribe
-    input.addEventListener('keyup', buscar);
+    mainSearch.addEventListener('input', updateView);
 
-    // Cargar la tabla apenas abre la página
-    window.onload = buscar;
+    // Carga inicial
+    window.onload = updateView;
 </script>
 
 </body>
