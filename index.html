@@ -15,7 +15,6 @@
         .logo-img { max-width: 90px; border-radius: 15px; border: 2px solid var(--main-blue); margin-bottom: 5px; }
         .title { font-family: 'Orbitron', sans-serif; color: var(--main-blue); font-size: 1.2rem; }
         
-        /* Estilo Botones Menú y Software */
         .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; transition: 0.3s; margin-bottom: 10px; font-weight: bold; width: 100%; text-align: left; }
         .btn-cat:hover { border-color: var(--main-blue); background: #222; }
 
@@ -44,9 +43,9 @@
     <div id="step-1">
         <h5 class="step-title">Seleccione una Categoría</h5>
         <div class="row g-2">
-            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('MODULOS')">📱 Módulos</button></div>
-            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('BATERIAS')">🔋 Baterías</button></div>
-            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('PIN DE CARGA')">🔌 Partes Chicas</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('MODULO')">📱 Módulos</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('BATERIA')">🔋 Baterías</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('PIN')">🔌 Partes Chicas</button></div>
             <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('SOFTWARE')">💻 Software</button></div>
         </div>
     </div>
@@ -60,7 +59,7 @@
             <br><span class="badge-final">✅ PRECIO FINAL (Mano de Obra incluida)</span>
         </div>
 
-        <input type="text" id="searchInput" class="form-control mb-3" oninput="filterProducts()">
+        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Escriba el modelo..." oninput="filterProducts()">
         <div id="productList" class="list-group"></div>
     </div>
 
@@ -69,38 +68,20 @@
         <h5 class="step-title">Datos de la Orden</h5>
         <div class="card bg-dark border-secondary p-3">
             <p id="resumen-equipo" class="text-info small mb-3"></p>
-            
             <label>Nombre del Cliente:</label>
-            <input type="text" id="clienteNombre" class="form-control mb-2" placeholder="Nombre completo">
-            
+            <input type="text" id="clienteNombre" class="form-control mb-2">
             <label>Tipo de Seguridad:</label>
             <select id="tipoClave" class="form-select mb-2" onchange="toggleClave()">
                 <option value="Sin Clave">Sin Clave</option>
                 <option value="PIN">PIN / Contraseña</option>
                 <option value="Patron">Patrón de Dibujo</option>
             </select>
-
-            <div id="div-pin" class="hidden">
-                <label>Escriba la Clave:</label>
-                <input type="text" id="valPin" class="form-control mb-2">
-            </div>
-
-            <div id="div-patron" class="hidden text-center">
-                <label>Dibuje el Patrón:</label>
-                <div id="patternContainer"></div>
-                <label>Referencia Visual:</label>
-                <input type="text" id="valPatronDesc" class="form-control mb-2" placeholder="Ej: Una L">
-            </div>
-
+            <div id="div-pin" class="hidden"><label>Escriba la Clave:</label><input type="text" id="valPin" class="form-control mb-2"></div>
+            <div id="div-patron" class="hidden text-center"><label>Dibuje el Patrón:</label><div id="patternContainer"></div><input type="text" id="valPatronDesc" class="form-control mb-2" placeholder="Referencia visual"></div>
             <label>Fallas o Detalles:</label>
-            <textarea id="detalles" class="form-control mb-2" rows="2" placeholder="Ej: No carga, pantalla rota..."></textarea>
-            
+            <textarea id="detalles" class="form-control mb-2" rows="2"></textarea>
             <label>Método de Pago:</label>
-            <select id="metodoPago" class="form-select mb-3">
-                <option value="Efectivo">Efectivo</option>
-                <option value="Transferencia">Transferencia</option>
-            </select>
-
+            <select id="metodoPago" class="form-select mb-3"><option value="Efectivo">Efectivo</option><option value="Transferencia">Transferencia</option></select>
             <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold py-3">ENVIAR A WHATSAPP</button>
         </div>
     </div>
@@ -112,25 +93,21 @@
 <script>
     let currentCat = '', selectedProd = '', selectedPrice = '', lock;
 
-    // --- FÓRMULAS ACTUALIZADAS ---
     function calcularPrecioFinal(base, nombre, cat) {
-        if (cat === 'MODULOS') {
-            const costoEnvio = 15000;
-            // Mano de obra Android $10.000 / iPhone $50.000
-            const manoObra = nombre.toLowerCase().includes('iph') ? 50000 : 10000; 
-            return Math.round((base + costoEnvio) * 2 + manoObra).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        let n = nombre.toLowerCase();
+        let c = cat.toLowerCase();
+
+        if (c.includes('modulo')) {
+            const envio = 15000;
+            const mo = n.includes('iph') ? 50000 : 10000; 
+            return Math.round((base + envio) * 2 + mo).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        
-        if (cat === 'BATERIAS') {
-            // (Base + 5000 envío) * 2 + 5000 mano obra
+        if (c.includes('bateria')) {
             return Math.round((base + 5000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-
-        if (cat === 'PIN DE CARGA') {
-            // (Base + 3000 envío) * 2 + 8000 mano obra
+        if (c.includes('pin') || c.includes('carga')) {
             return Math.round((base + 3000) * 2 + 8000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        
         return base.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
     }
 
@@ -141,9 +118,8 @@
 
     function chooseCategory(cat) {
         currentCat = cat;
-        document.getElementById('cat-selected').innerText = "Sección: " + (cat === 'PIN DE CARGA' ? 'PARTES CHICAS' : cat);
-        document.getElementById('box-garantia').classList.toggle('hidden', cat !== 'MODULOS');
-        document.getElementById('searchInput').placeholder = `Buscar en ${cat}...`;
+        document.getElementById('cat-selected').innerText = "Sección: " + cat;
+        document.getElementById('box-garantia').classList.toggle('hidden', !cat.includes('MODULO'));
         document.getElementById('searchInput').value = '';
         showStep(2);
         filterProducts();
@@ -156,54 +132,45 @@
 
         if (currentCat === 'SOFTWARE') {
             document.getElementById('searchInput').classList.add('hidden');
-            const soft = [
-                ["Sistema Operativo / Flasheo", "$20.000"],
-                ["Cuenta Google (FRP)", "$35.000"],
-                ["Eliminar Patrón / PIN", "$20.000"],
-                ["Eliminar Virus Publicitario", "$5.000"]
-            ];
+            const soft = [["Sistema Operativo", "$20.000"],["Cuenta Google (FRP)", "$35.000"],["Eliminar PIN/Patrón", "$20.000"],["Virus Publicitario", "$5.000"]];
             soft.forEach(s => addBtn(s[0], s[1], true));
             return;
         }
 
         document.getElementById('searchInput').classList.remove('hidden');
 
-        // Pin Universal en Partes Chicas
-        if (currentCat === 'PIN DE CARGA' && (bus === '' || "pin universal".includes(bus))) {
+        // Botón Manual Pin Universal
+        if (currentCat.includes('PIN') && (bus === '' || "pin universal".includes(bus))) {
             addBtn("Pin de Carga Universal", "$30.000", false);
         }
 
-        // --- FILTRO POR CATEGORÍA DEL JS ---
-        // Buscamos solo los que coincidan con la categoría seleccionada
+        // BUSQUEDA FLEXIBLE
         const filtrados = db.filter(item => {
-            const catItem = item.CATEGORIA ? item.CATEGORIA.toUpperCase() : "";
-            const nombreItem = item.PRODUCTO ? item.PRODUCTO.toLowerCase() : "";
-            
-            // Si la categoría del botón coincide con la del JS Y el nombre incluye lo buscado
-            return catItem === currentCat && nombreItem.includes(bus);
+            const itemCat = (item.CATEGORIA || "").toLowerCase();
+            const itemProd = (item.PRODUCTO || "").toLowerCase();
+            // Compara si la categoría del JS contiene la palabra clave (ej: "MODULO" entra en "MODULOS")
+            return itemCat.includes(currentCat.toLowerCase()) && itemProd.includes(bus);
         });
 
         filtrados.forEach(item => {
-            const precioBase = parseFloat(item.PRECIO.replace(/[$. ]/g, "")) || 0;
-            const final = calcularPrecioFinal(precioBase, item.PRODUCTO, currentCat);
+            const base = parseFloat(item.PRECIO.replace(/[$. ]/g, "")) || 0;
+            const final = calcularPrecioFinal(base, item.PRODUCTO, item.CATEGORIA);
             addBtn(item.PRODUCTO, final, false);
         });
     }
 
-    function addBtn(nombre, precio, esEstiloMenu) {
+    function addBtn(nombre, precio, esSoft) {
         const item = document.createElement('button');
-        if(esEstiloMenu) item.className = 'btn-cat d-flex justify-content-between align-items-center px-3';
-        else item.className = 'list-group-item list-group-item-action p-3';
-        
+        item.className = esSoft ? 'btn-cat d-flex justify-content-between align-items-center px-3' : 'list-group-item list-group-item-action p-3';
         item.innerHTML = `<span>${nombre}</span><span class="price-tag">${precio}</span>`;
         item.onclick = () => {
             selectedProd = nombre; selectedPrice = precio;
             document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Precio Final: ${precio}</b>`;
             showStep(3);
-            if(!lock) lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 });
-            else lock.reset();
+            if(!lock) lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 }); else lock.reset();
         };
-        document.getElementById('productList').appendChild(item);
+        lista = document.getElementById('productList');
+        lista.appendChild(item);
     }
 
     function toggleClave() {
@@ -214,10 +181,10 @@
 
     function enviarWhatsApp() {
         const cliente = document.getElementById('clienteNombre').value;
-        if(!cliente) { alert("Ingresa el nombre del cliente"); return; }
-        const tipoC = document.getElementById('tipoClave').value;
-        let claveInfo = (tipoC === 'PIN') ? document.getElementById('valPin').value : (tipoC === 'Patron') ? "Patrón ("+document.getElementById('valPatronDesc').value+")" : "Sin clave";
-        const msj = `*EA-INFORMATICA*%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Presupuesto:* ${selectedPrice}%0A🔑 *Seguridad:* ${claveInfo}%0A📝 *Falla:* ${document.getElementById('detalles').value}%0A💳 *Pago:* ${document.getElementById('metodoPago').value}`;
+        if(!cliente) { alert("Falta el nombre"); return; }
+        const t = document.getElementById('tipoClave').value;
+        let c = (t==='PIN') ? document.getElementById('valPin').value : (t==='Patron') ? "Patrón ("+document.getElementById('valPatronDesc').value+")" : "Sin clave";
+        const msj = `*EA-INFORMATICA*%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Presupuesto:* ${selectedPrice}%0A🔑 *Seguridad:* ${c}%0A📝 *Falla:* ${document.getElementById('detalles').value}%0A💳 *Pago:* ${document.getElementById('metodoPago').value}`;
         window.open(`https://wa.me/5493854416248?text=${msj}`, '_blank');
     }
 </script>
