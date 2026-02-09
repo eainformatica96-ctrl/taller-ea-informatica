@@ -1,4 +1,4 @@
-[
+const db = [
     {
         "Cod": "8126",
         "Categoría": "Placas",
@@ -11891,4 +11891,4 @@
         "Nombre": "FLEX SENSOR DE PROXIMIDAD AURICULAR IPH 16 PRO MAX",
         "Precio": "29599"
     }
-]
+];
