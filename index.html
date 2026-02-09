@@ -25,9 +25,6 @@
         .step-title { border-left: 4px solid var(--main-blue); padding-left: 10px; margin: 15px 0; font-size: 1rem; }
         .price-tag { color: var(--main-blue); font-weight: bold; font-size: 1rem; }
         
-        .info-calidad { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--main-blue); border-radius: 10px; padding: 12px; font-size: 0.85rem; margin-bottom: 15px; }
-        .badge-final { background: #4caf50; color: white; padding: 2px 8px; border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 5px; }
-        
         label { font-size: 0.85rem; color: var(--main-blue); margin-bottom: 4px; font-weight: bold; display: block; margin-top: 10px; }
         .form-control, .form-select { background-color: #111 !important; color: white !important; border: 1px solid #444 !important; }
     </style>
@@ -43,9 +40,9 @@
     <div id="step-1">
         <h5 class="step-title">Seleccione una Categoría</h5>
         <div class="row g-2">
-            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('MODULO')">📱 Módulos</button></div>
-            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('BATERIA')">🔋 Baterías</button></div>
-            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('PIN')">🔌 Partes Chicas</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('MODULOS')">📱 Módulos</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('BATERIAS')">🔋 Baterías</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('PIN DE CARGA')">🔌 Partes Chicas</button></div>
             <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('SOFTWARE')">💻 Software</button></div>
         </div>
     </div>
@@ -53,13 +50,7 @@
     <div id="step-2" class="hidden">
         <button class="btn btn-sm text-secondary mb-2" onclick="showStep(1)">← Volver</button>
         <h5 id="cat-selected" class="step-title"></h5>
-        
-        <div id="box-garantia" class="info-calidad hidden">
-            <b>💡 Calidades:</b> • <b>Incell:</b> Sin Garantía. • <b>Oled:</b> 3 Meses.
-            <br><span class="badge-final">✅ PRECIO FINAL (Mano de Obra incluida)</span>
-        </div>
-
-        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Escriba el modelo..." oninput="filterProducts()">
+        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Buscar modelo..." oninput="filterProducts()">
         <div id="productList" class="list-group"></div>
     </div>
 
@@ -77,11 +68,9 @@
                 <option value="Patron">Patrón de Dibujo</option>
             </select>
             <div id="div-pin" class="hidden"><label>Escriba la Clave:</label><input type="text" id="valPin" class="form-control mb-2"></div>
-            <div id="div-patron" class="hidden text-center"><label>Dibuje el Patrón:</label><div id="patternContainer"></div><input type="text" id="valPatronDesc" class="form-control mb-2" placeholder="Referencia visual"></div>
+            <div id="div-patron" class="hidden text-center"><label>Dibuje el Patrón:</label><div id="patternContainer"></div></div>
             <label>Fallas o Detalles:</label>
             <textarea id="detalles" class="form-control mb-2" rows="2"></textarea>
-            <label>Método de Pago:</label>
-            <select id="metodoPago" class="form-select mb-3"><option value="Efectivo">Efectivo</option><option value="Transferencia">Transferencia</option></select>
             <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold py-3">ENVIAR A WHATSAPP</button>
         </div>
     </div>
@@ -93,28 +82,22 @@
 <script>
     let currentCat = '', selectedProd = '', selectedPrice = '', lock;
 
-    // Función para limpiar precios y convertirlos en números
-    function cleanPrice(price) {
-        if (!price) return 0;
-        return parseFloat(price.toString().replace(/[$. ]/g, "")) || 0;
-    }
-
     function calcularPrecioFinal(base, nombre, cat) {
         let n = nombre.toLowerCase();
-        let c = cat ? cat.toLowerCase() : "";
+        let c = cat.toUpperCase();
+        let b = parseFloat(base.toString().replace(/[$. ]/g, "")) || 0;
 
-        if (c.includes('modulo')) {
-            const envio = 15000;
+        if (c.includes('MODULO')) {
             const mo = n.includes('iph') ? 50000 : 10000; 
-            return Math.round((base + envio) * 2 + mo).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+            return Math.round((b + 15000) * 2 + mo).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        if (c.includes('bateria')) {
-            return Math.round((base + 5000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        if (c.includes('BATERIA')) {
+            return Math.round((b + 5000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        if (c.includes('pin') || c.includes('carga')) {
-            return Math.round((base + 3000) * 2 + 8000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        if (c.includes('PIN')) {
+            return Math.round((b + 3000) * 2 + 8000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        return base.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        return b.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
     }
 
     function showStep(s) {
@@ -124,8 +107,7 @@
 
     function chooseCategory(cat) {
         currentCat = cat;
-        document.getElementById('cat-selected').innerText = "Sección: " + (cat === 'PIN' ? 'PARTES CHICAS' : cat);
-        document.getElementById('box-garantia').classList.toggle('hidden', !cat.includes('MODULO'));
+        document.getElementById('cat-selected').innerText = "Sección: " + cat;
         document.getElementById('searchInput').value = '';
         showStep(2);
         filterProducts();
@@ -137,40 +119,30 @@
         lista.innerHTML = '';
 
         if (currentCat === 'SOFTWARE') {
-            document.getElementById('searchInput').classList.add('hidden');
-            const soft = [
-                ["Sistema Operativo / Flasheo", "$20.000"],
-                ["Cuenta Google (FRP)", "$35.000"],
-                ["Eliminar PIN/Patrón", "$20.000"],
-                ["Virus Publicitario", "$5.000"]
-            ];
+            const soft = [["Sistema Operativo", "$20.000"],["Cuenta Google", "$35.000"]];
             soft.forEach(s => addBtn(s[0], s[1], true));
             return;
         }
 
-        document.getElementById('searchInput').classList.remove('hidden');
-
-        // Botón Manual Pin Universal en Partes Chicas
-        if (currentCat === 'PIN' && (bus === '' || "pin universal".includes(bus))) {
+        // Botón Manual Pin Universal
+        if (currentCat === 'PIN DE CARGA' && (bus === '' || "pin universal".includes(bus))) {
             addBtn("Pin de Carga Universal", "$30.000", false);
         }
 
-        // Si db no existe (error de carga), avisar
+        // Verificamos si la base de datos cargó
         if (typeof db === 'undefined') {
-            lista.innerHTML = "<div class='text-danger p-3'>Error: No se encontró el archivo productos.js</div>";
+            lista.innerHTML = "<div class='text-danger'>Error: productos.js no cargó o no tiene 'const db ='</div>";
             return;
         }
 
-        // BUSQUEDA
         const filtrados = db.filter(item => {
-            const itemCat = (item.CATEGORIA || "").toLowerCase();
+            const itemCat = (item.CATEGORIA || "").toUpperCase();
             const itemProd = (item.PRODUCTO || "").toLowerCase();
-            return itemCat.includes(currentCat.toLowerCase()) && itemProd.includes(bus);
+            return itemCat === currentCat && itemProd.includes(bus);
         });
 
         filtrados.forEach(item => {
-            const base = cleanPrice(item.PRECIO);
-            const final = calcularPrecioFinal(base, item.PRODUCTO, item.CATEGORIA);
+            const final = calcularPrecioFinal(item.PRECIO, item.PRODUCTO, item.CATEGORIA);
             addBtn(item.PRODUCTO, final, false);
         });
     }
@@ -181,7 +153,7 @@
         item.innerHTML = `<span>${nombre}</span><span class="price-tag">${precio}</span>`;
         item.onclick = () => {
             selectedProd = nombre; selectedPrice = precio;
-            document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Presupuesto Final: ${precio}</b>`;
+            document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Total: ${precio}</b>`;
             showStep(3);
             if(!lock) lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 }); else lock.reset();
         };
@@ -196,10 +168,8 @@
 
     function enviarWhatsApp() {
         const cliente = document.getElementById('clienteNombre').value;
-        if(!cliente) { alert("Falta el nombre"); return; }
-        const t = document.getElementById('tipoClave').value;
-        let c = (t==='PIN') ? document.getElementById('valPin').value : (t==='Patron') ? "Patrón ("+document.getElementById('valPatronDesc').value+")" : "Sin clave";
-        const msj = `*EA-INFORMATICA*%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Presupuesto:* ${selectedPrice}%0A🔑 *Seguridad:* ${c}%0A📝 *Falla:* ${document.getElementById('detalles').value}%0A💳 *Pago:* ${document.getElementById('metodoPago').value}`;
+        if(!cliente) { alert("Nombre obligatorio"); return; }
+        const msj = `*EA-INFORMATICA*%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Precio:* ${selectedPrice}`;
         window.open(`https://wa.me/5493854416248?text=${msj}`, '_blank');
     }
 </script>
