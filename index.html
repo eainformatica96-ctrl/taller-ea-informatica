@@ -93,9 +93,15 @@
 <script>
     let currentCat = '', selectedProd = '', selectedPrice = '', lock;
 
+    // Función para limpiar precios y convertirlos en números
+    function cleanPrice(price) {
+        if (!price) return 0;
+        return parseFloat(price.toString().replace(/[$. ]/g, "")) || 0;
+    }
+
     function calcularPrecioFinal(base, nombre, cat) {
         let n = nombre.toLowerCase();
-        let c = cat.toLowerCase();
+        let c = cat ? cat.toLowerCase() : "";
 
         if (c.includes('modulo')) {
             const envio = 15000;
@@ -108,7 +114,7 @@
         if (c.includes('pin') || c.includes('carga')) {
             return Math.round((base + 3000) * 2 + 8000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        return base.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+        return base.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
     }
 
     function showStep(s) {
@@ -118,7 +124,7 @@
 
     function chooseCategory(cat) {
         currentCat = cat;
-        document.getElementById('cat-selected').innerText = "Sección: " + cat;
+        document.getElementById('cat-selected').innerText = "Sección: " + (cat === 'PIN' ? 'PARTES CHICAS' : cat);
         document.getElementById('box-garantia').classList.toggle('hidden', !cat.includes('MODULO'));
         document.getElementById('searchInput').value = '';
         showStep(2);
@@ -132,28 +138,38 @@
 
         if (currentCat === 'SOFTWARE') {
             document.getElementById('searchInput').classList.add('hidden');
-            const soft = [["Sistema Operativo", "$20.000"],["Cuenta Google (FRP)", "$35.000"],["Eliminar PIN/Patrón", "$20.000"],["Virus Publicitario", "$5.000"]];
+            const soft = [
+                ["Sistema Operativo / Flasheo", "$20.000"],
+                ["Cuenta Google (FRP)", "$35.000"],
+                ["Eliminar PIN/Patrón", "$20.000"],
+                ["Virus Publicitario", "$5.000"]
+            ];
             soft.forEach(s => addBtn(s[0], s[1], true));
             return;
         }
 
         document.getElementById('searchInput').classList.remove('hidden');
 
-        // Botón Manual Pin Universal
-        if (currentCat.includes('PIN') && (bus === '' || "pin universal".includes(bus))) {
+        // Botón Manual Pin Universal en Partes Chicas
+        if (currentCat === 'PIN' && (bus === '' || "pin universal".includes(bus))) {
             addBtn("Pin de Carga Universal", "$30.000", false);
         }
 
-        // BUSQUEDA FLEXIBLE
+        // Si db no existe (error de carga), avisar
+        if (typeof db === 'undefined') {
+            lista.innerHTML = "<div class='text-danger p-3'>Error: No se encontró el archivo productos.js</div>";
+            return;
+        }
+
+        // BUSQUEDA
         const filtrados = db.filter(item => {
             const itemCat = (item.CATEGORIA || "").toLowerCase();
             const itemProd = (item.PRODUCTO || "").toLowerCase();
-            // Compara si la categoría del JS contiene la palabra clave (ej: "MODULO" entra en "MODULOS")
             return itemCat.includes(currentCat.toLowerCase()) && itemProd.includes(bus);
         });
 
         filtrados.forEach(item => {
-            const base = parseFloat(item.PRECIO.replace(/[$. ]/g, "")) || 0;
+            const base = cleanPrice(item.PRECIO);
             const final = calcularPrecioFinal(base, item.PRODUCTO, item.CATEGORIA);
             addBtn(item.PRODUCTO, final, false);
         });
@@ -165,12 +181,11 @@
         item.innerHTML = `<span>${nombre}</span><span class="price-tag">${precio}</span>`;
         item.onclick = () => {
             selectedProd = nombre; selectedPrice = precio;
-            document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Precio Final: ${precio}</b>`;
+            document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Presupuesto Final: ${precio}</b>`;
             showStep(3);
             if(!lock) lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 }); else lock.reset();
         };
-        lista = document.getElementById('productList');
-        lista.appendChild(item);
+        document.getElementById('productList').appendChild(item);
     }
 
     function toggleClave() {
