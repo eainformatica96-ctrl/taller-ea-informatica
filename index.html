@@ -2,81 +2,78 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscador de Repuestos</title>
+    <title>Prueba de Búsqueda - Taller</title>
     <script src="productos.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f7f6; color: #333; }
-        .container { max-width: 900px; margin: auto; }
-        input { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
-        .producto { background: white; padding: 15px; margin-top: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .info { flex: 1; }
-        .nombre { font-weight: bold; display: block; margin-bottom: 5px; }
-        .codigo { color: #888; font-size: 0.8em; }
-        .precio { color: #27ae60; font-weight: bold; font-size: 1.2em; margin-left: 15px; }
-        .error { color: red; text-align: center; margin-top: 20px; }
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; background: #f0f2f5; }
+        .caja-busqueda { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; font-size: 18px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        .precio-txt { color: #28a745; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Mi Inventario</h1>
-    <input type="text" id="buscador" placeholder="Escribe modelo o repuesto (ej: Moto G8)...">
-    <div id="resultados"></div>
-</div>
+    <div class="caja-busqueda">
+        <h2>Buscador de Repuestos</h2>
+        <input type="text" id="inputBusqueda" placeholder="Escribe para buscar (ej: ALC 1S)...">
+        
+        <table id="tablaProductos">
+            <thead>
+                <tr>
+                    <th>CÓDIGO</th>
+                    <th>PRODUCTO</th>
+                    <th>PRECIO</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpoTabla">
+                </tbody>
+        </table>
+    </div>
 
 <script>
-    // Esta función limpia y normaliza los datos del proveedor
-    const productosLimpios = db.map(item => {
-        // Buscamos cuál de las propiedades tiene el nombre del producto
-        // (ya que el proveedor usa nombres de columnas largos)
-        const keys = Object.keys(item);
-        
-        // Intentamos extraer el precio y limpiarlo
-        let precioSucio = item[" PRECIO"] || item["PRECIO"] || "";
-        let precioLimpio = parseFloat(precioSucio.replace(/[$. ]/g, "")) || 0;
+    const tabla = document.getElementById('cuerpoTabla');
+    const input = document.getElementById('inputBusqueda');
 
-        return {
-            cod: item["COD"] || item["cod"] || "N/A",
-            // Tomamos el valor de la segunda columna como nombre del producto
-            nombre: item[keys[1]] || "Sin nombre", 
-            precio: precioLimpio
-        };
-    });
+    function buscar() {
+        const termino = input.value.toLowerCase();
+        tabla.innerHTML = "";
 
-    const buscador = document.getElementById('buscador');
-    const divResultados = document.getElementById('resultados');
+        // Filtramos sobre el array 'db' de productos.js
+        const filtrados = db.filter(item => {
+            // Adaptación exacta a tus etiquetas: "COD", "PLACAS DE CARGAS" (o similares) y " PRECIO"
+            // Usamos Object.values para buscar en cualquier columna sin importar el nombre
+            const contenidoFila = Object.values(item).join(" ").toLowerCase();
+            return contenidoFila.includes(termino);
+        });
 
-    function filtrar() {
-        const texto = buscador.value.toLowerCase();
-        divResultados.innerHTML = '';
-
-        const filtrados = productosLimpios.filter(p => 
-            p.nombre.toLowerCase().includes(texto) || 
-            p.cod.toString().includes(texto)
-        );
-
-        // Limitamos a 50 resultados para que no explote el navegador
-        filtrados.slice(0, 50).forEach(p => {
-            divResultados.innerHTML += `
-                <div class="producto">
-                    <div class="info">
-                        <span class="nombre">${p.nombre}</span>
-                        <span class="codigo">Cód: ${p.cod}</span>
-                    </div>
-                    <div class="precio">$${p.precio.toLocaleString('es-AR')}</div>
-                </div>
-            `;
+        filtrados.forEach(item => {
+            const valores = Object.values(item);
+            // valores[0] es el COD
+            // valores[1] es la DESCRIPCIÓN
+            // valores[2] es el PRECIO
+            
+            const fila = `<tr>
+                <td>${valores[0]}</td>
+                <td>${valores[1]}</td>
+                <td class="precio-txt">${valores[2]}</td>
+            </tr>`;
+            tabla.innerHTML += fila;
         });
 
         if (filtrados.length === 0) {
-            divResultados.innerHTML = '<p class="error">No se encontró nada.</p>';
+            tabla.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay coincidencias</td></tr>';
         }
     }
 
-    buscador.addEventListener('input', filtrar);
-    // Mostrar todo al principio
-    filtrar();
+    // Escuchar cuando el usuario escribe
+    input.addEventListener('keyup', buscar);
+
+    // Cargar la tabla apenas abre la página
+    window.onload = buscar;
 </script>
 
 </body>
