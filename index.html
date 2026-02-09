@@ -15,7 +15,8 @@
         .logo-img { max-width: 90px; border-radius: 15px; border: 2px solid var(--main-blue); margin-bottom: 5px; }
         .title { font-family: 'Orbitron', sans-serif; color: var(--main-blue); font-size: 1.2rem; }
         
-        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; transition: 0.3s; margin-bottom: 10px; font-weight: bold; }
+        /* Estilo de botones de menú y software */
+        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; transition: 0.3s; margin-bottom: 10px; font-weight: bold; width: 100%; }
         .btn-cat:hover { border-color: var(--main-blue); background: #222; }
 
         .list-group-item { background: var(--card-bg); color: white; border: 1px solid #333; margin-bottom: 5px; border-radius: 10px !important; cursor: pointer; }
@@ -27,10 +28,6 @@
         
         .info-calidad { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--main-blue); border-radius: 10px; padding: 12px; font-size: 0.85rem; margin-bottom: 15px; }
         .badge-final { background: #4caf50; color: white; padding: 2px 8px; border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 5px; }
-        
-        .table-soft { width: 100%; color: white; font-size: 0.9rem; border-collapse: separate; border-spacing: 0 5px; }
-        .table-soft td { background: #222; padding: 12px; border: 1px solid #333; }
-        .table-soft tr:hover td { border-color: var(--main-blue); }
     </style>
 </head>
 <body>
@@ -44,10 +41,10 @@
     <div id="step-1">
         <h5 class="step-title">Seleccione una Categoría</h5>
         <div class="row g-2">
-            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('MODULOS')">📱 Módulos</button></div>
-            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('BATERIAS')">🔋 Baterías</button></div>
-            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('PARTES CHICAS')">🔌 Partes Chicas</button></div>
-            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('SOFTWARE')">💻 Software</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('MODULOS')">📱 Módulos</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('BATERIAS')">🔋 Baterías</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('PARTES CHICAS')">🔌 Partes Chicas</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('SOFTWARE')">💻 Software</button></div>
         </div>
     </div>
 
@@ -102,8 +99,8 @@
             const manoObra = nombre.toLowerCase().includes('iph') ? 50000 : 10000; 
             return Math.round((base + costoEnvio) * 2 + manoObra).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        // Para Baterías y Partes Chicas (Ajusta la fórmula si necesitas una distinta)
-        return Math.round((base + 4000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        // Baterías y Partes Chicas: Costo base + margen de ganancia y mano de obra
+        return Math.round((base + 5000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
     }
 
     function showStep(s) {
@@ -114,14 +111,9 @@
     function chooseCategory(cat) {
         currentCat = cat;
         document.getElementById('cat-selected').innerText = cat;
-        
-        // Mostrar garantía solo en módulos
         document.getElementById('box-garantia').classList.toggle('hidden', cat !== 'MODULOS');
-        
-        // Prehold/Placeholder dinámico
-        document.getElementById('searchInput').placeholder = `Buscar en ${cat} (Ej: A10, S23, G52...)`;
+        document.getElementById('searchInput').placeholder = `Buscar en ${cat}...`;
         document.getElementById('searchInput').value = '';
-        
         showStep(2);
         filterProducts();
     }
@@ -131,28 +123,42 @@
         const lista = document.getElementById('productList');
         lista.innerHTML = '';
 
+        // --- SUBMENÚ SOFTWARE (Con estilo de botones) ---
         if (currentCat === 'SOFTWARE') {
             document.getElementById('searchInput').classList.add('hidden');
-            lista.innerHTML = `
-                <table class="table-soft">
-                    <tr onclick="selectManual('Sistema Operativo / Flasheo', '$20.000')"><td>Sistema Operativo / Flasheo</td><td class="text-end">$20.000</td></tr>
-                    <tr onclick="selectManual('Cuenta Google (FRP)', '$35.000')"><td>Cuenta Google (FRP)</td><td class="text-end">$35.000</td></tr>
-                    <tr onclick="selectManual('Eliminar Patrón / PIN', '$20.000')"><td>Eliminar Patrón / PIN</td><td class="text-end">$20.000</td></tr>
-                    <tr onclick="selectManual('Eliminar Virus Publicitario', '$5.000')"><td>Eliminar Virus Publicitario</td><td class="text-end">$5.000</td></tr>
-                </table>`;
+            const opcionesSoft = [
+                ["Sistema Operativo / Flasheo", "20.000"],
+                ["Cuenta Google (FRP)", "35.000"],
+                ["Eliminar Patrón / PIN", "20.000"],
+                ["Eliminar Virus Publicitario", "5.000"]
+            ];
+            opcionesSoft.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-cat d-flex justify-content-between align-items-center px-3';
+                btn.innerHTML = `<span>${opt[0]}</span><span class="price-tag">$${opt[1]}</span>`;
+                btn.onclick = () => selectManual(opt[0], "$"+opt[1]);
+                lista.appendChild(btn);
+            });
             return;
         }
 
         document.getElementById('searchInput').classList.remove('hidden');
-        
-        const filtrados = db.filter(item => {
-            const valores = Object.values(item).map(v => v.toString().toLowerCase());
-            return valores.some(v => v.includes(currentCat.toLowerCase())) && valores.some(v => v.includes(bus));
-        });
 
-        if (filtrados.length === 0) {
-            lista.innerHTML = '<div class="text-center text-secondary p-4">No se encontró el repuesto.</div>';
+        // --- AGREGAR PIN UNIVERSAL EN PARTES CHICAS ---
+        if (currentCat === 'PARTES CHICAS' && (bus === '' || "pin de carga universal".includes(bus))) {
+            const btnUni = document.createElement('button');
+            btnUni.className = 'list-group-item list-group-item-action p-3';
+            btnUni.innerHTML = `<div class="d-flex justify-content-between align-items-center"><span>Pin de Carga Universal</span><span class="price-tag">$30.000</span></div>`;
+            btnUni.onclick = () => selectManual("Pin de Carga Universal", "$30.000");
+            lista.appendChild(btnUni);
         }
+
+        // --- BÚSQUEDA EN BASE DE DATOS (CORREGIDA) ---
+        const filtrados = db.filter(item => {
+            const filaStr = Object.values(item).join(" ").toLowerCase();
+            // Verifica que pertenezca a la categoría y que contenga el texto buscado
+            return filaStr.includes(currentCat.toLowerCase()) && filaStr.includes(bus);
+        });
 
         filtrados.forEach(item => {
             const fila = Object.values(item);
