@@ -3,59 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recepción - EA-Informatica</title>
+    <title>EA-Informatica | Recepción</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Roboto:wght@300;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/patternlock@2.0.2/dist/patternlock.min.css" rel="stylesheet">
+    
     <style>
-        body { background-color: #f8f9fa; }
-        .card { border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .btn-success { background-color: #25d366; border: none; }
+        :root { --main-blue: #00d4ff; --bg-dark: #0a0a0a; --card-bg: #1a1a1a; }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Roboto', sans-serif; }
+        .header-box { text-align: center; padding: 20px; }
+        .logo-img { max-width: 150px; border-radius: 20px; margin-bottom: 10px; border: 2px solid var(--main-blue); }
+        .title { font-family: 'Orbitron', sans-serif; color: var(--main-blue); letter-spacing: 2px; }
+        
+        /* Botones de Categoría */
+        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; height: 120px; border-radius: 15px; transition: 0.3s; }
+        .btn-cat:hover { border-color: var(--main-blue); transform: translateY(-5px); background: #222; }
+        .btn-cat i { font-size: 2rem; display: block; margin-bottom: 10px; }
+
+        /* Buscador y Resultados */
+        .list-group-item { background: var(--card-bg); color: white; border: 1px solid #333; cursor: pointer; }
+        .list-group-item:hover { background: #333; border-color: var(--main-blue); }
+        
+        /* Patrón Visual */
+        #patternContainer { margin: 10px auto; background: #222; border-radius: 10px; padding: 10px; width: 280px; }
+        .hidden { display: none; }
+        .step-title { border-left: 4px solid var(--main-blue); padding-left: 10px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card p-4">
-                    <h3 class="text-center mb-4">📱 Orden de Servicio</h3>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Nombre del Cliente</label>
-                        <input type="text" id="nombre" class="form-control" placeholder="Ej: Juan Pérez">
-                    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Equipo (Modelo)</label>
-                        <input type="text" id="equipo" class="form-control" placeholder="Ej: Samsung S21">
-                    </div>
+<div class="container py-3">
+    <div class="header-box">
+        <img src="https://raw.githubusercontent.com/eainformatica96-ctrl/Taller-EA-Informatica/main/Taller.png" alt="Logo" class="logo-img">
+        <h2 class="title">EA-INFORMATICA</h2>
+        <p class="text-secondary small">Servicio Técnico Especializado</p>
+    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Falla Reportada</label>
-                        <textarea id="falla" class="form-control" rows="3" placeholder="Ej: No carga / Pantalla rota"></textarea>
-                    </div>
-
-                    <button onclick="enviarWhatsApp()" class="btn btn-success w-100">
-                        Enviar Orden por WhatsApp
-                    </button>
-                </div>
-            </div>
+    <div id="step-1">
+        <h5 class="step-title">¿Qué servicio necesitas?</h5>
+        <div class="row g-3">
+            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('MODULOS')">📱 Módulos</button></div>
+            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('BATERIAS')">🔋 Baterías</button></div>
+            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('PARTES')">🔌 Partes Chicas</button></div>
+            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('SOFTWARE')">💻 Software / Cuentas</button></div>
         </div>
     </div>
 
-    <script>
-        function enviarWhatsApp() {
-            const telefono = "5493854416248"; // CAMBIA ESTO POR TU NÚMERO
-            const nombre = document.getElementById('nombre').value;
-            const equipo = document.getElementById('equipo').value;
-            const falla = document.getElementById('falla').value;
+    <div id="step-2" class="hidden">
+        <button class="btn btn-sm btn-link text-secondary p-0 mb-3" onclick="showStep(1)">← Volver atrás</button>
+        <h5 id="cat-selected" class="step-title">Buscando...</h5>
+        <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Escribe modelo (ej: Moto G8, A32...)" onkeyup="filterProducts()">
+        <div id="productList" class="list-group"></div>
+    </div>
 
-            const mensaje = `*NUEVA ORDEN*%0A` +
-                            `👤 *Cliente:* ${nombre}%0A` +
-                            `📱 *Equipo:* ${equipo}%0A` +
-                            `🛠️ *Falla:* ${falla}`;
+    <div id="step-3" class="hidden">
+        <button class="btn btn-sm btn-link text-secondary p-0 mb-3" onclick="showStep(2)">← Cambiar equipo</button>
+        <h5 class="step-title">Datos del Cliente</h5>
+        
+        <div class="card bg-dark border-secondary p-3">
+            <p class="text-info mb-1" id="resumen-equipo"></p>
+            <div class="mb-3">
+                <label class="small text-secondary">Nombre Completo</label>
+                <input type="text" id="clienteNombre" class="form-control bg-dark text-white border-secondary">
+            </div>
 
-            const url = `https://wa.me/${telefono}?text=${mensaje}`;
-            window.open(url, '_blank');
+            <div class="mb-3">
+                <label class="small text-secondary">Seguridad de Pantalla</label>
+                <select id="tipoClave" class="form-select bg-dark text-white border-secondary" onchange="toggleClave()">
+                    <option value="Sin Clave">Sin Clave</option>
+                    <option value="PIN/PIN">PIN o Contraseña</option>
+                    <option value="Patron">Patrón de Dibujo</option>
+                </select>
+            </div>
+
+            <div id="div-pin" class="mb-3 hidden">
+                <input type="text" id="valPin" class="form-control" placeholder="Ingrese PIN o Contraseña">
+            </div>
+
+            <div id="div-patron" class="mb-3 hidden text-center">
+                <div id="patternContainer"></div>
+                <input type="text" id="valPatronDesc" class="form-control mt-2" placeholder="Aclaración (ej: Una L, una Z)">
+            </div>
+
+            <div class="mb-3">
+                <label class="small text-secondary">Detalles adicionales / Fallas</label>
+                <textarea id="detalles" class="form-control bg-dark text-white border-secondary" rows="2" placeholder="Ej: No funciona el táctil, cuenta google..."></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="small text-secondary">Método de Pago</label>
+                <select id="metodoPago" class="form-select bg-dark text-white border-secondary">
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia</option>
+                </select>
+            </div>
+
+            <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold py-3 mt-2">GENERAR ORDEN</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/patternlock@2.0.2/dist/patternlock.min.js"></script>
+<script>
+    // DATOS DE EJEMPLO (Aquí puedes pegar los de tu Excel)
+    const db = [
+        { cat: 'MODULOS', nombre: 'Módulo Moto G8 / G8 Play', precio: '$22.000' },
+        { cat: 'MODULOS', nombre: 'Módulo Samsung A32 4G (Oled)', precio: '$35.000' },
+        { cat: 'BATERIAS', nombre: 'Batería iPhone 11 (Premium)', precio: '$18.500' },
+        { cat: 'SOFTWARE', nombre: 'Cuenta Google Samsung (Todos los modelos)', precio: '$8.000' },
+        { cat: 'PARTES', nombre: 'Pin de Carga Moto G9 Power', precio: '$6.500' }
+    ];
+
+    let currentCat = '';
+    let selectedProd = '';
+    let selectedPrice = '';
+    let lock;
+
+    function showStep(s) {
+        [1,2,3].forEach(n => document.getElementById('step-'+n).classList.add('hidden'));
+        document.getElementById('step-'+s).classList.remove('hidden');
+    }
+
+    function chooseCategory(cat) {
+        currentCat = cat;
+        document.getElementById('cat-selected').innerText = "Catálogo: " + cat;
+        showStep(2);
+        filterProducts();
+    }
+
+    function filterProducts() {
+        const busqueda = document.getElementById('searchInput').value.toLowerCase();
+        const lista = document.getElementById('productList');
+        lista.innerHTML = '';
+
+        const filtrados = db.filter(p => p.cat === currentCat && p.nombre.toLowerCase().includes(busqueda));
+
+        filtrados.forEach(p => {
+            const item = document.createElement('button');
+            item.className = 'list-group-item list-group-item-action';
+            item.innerHTML = `<div class="d-flex justify-content-between"><span>${p.nombre}</span> <b class="text-info">${p.precio}</b></div>`;
+            item.onclick = () => selectProduct(p.nombre, p.precio);
+            lista.appendChild(item);
+        });
+    }
+
+    function selectProduct(n, p) {
+        selectedProd = n;
+        selectedPrice = p;
+        document.getElementById('resumen-equipo').innerText = `Seleccionado: ${n} (${p})`;
+        showStep(3);
+        // Inicializar patrón si no existe
+        if(!lock) {
+            lock = new PatternLock("#patternContainer", {
+                onDraw: function(pattern){ console.log(pattern); }
+            });
         }
-    </script>
+    }
+
+    function toggleClave() {
+        const t = document.getElementById('tipoClave').value;
+        document.getElementById('div-pin').classList.toggle('hidden', t !== 'PIN/PIN');
+        document.getElementById('div-patron').classList.toggle('hidden', t !== 'Patron');
+    }
+
+    function enviarWhatsApp() {
+        const tel = "5493854416248";
+        const cliente = document.getElementById('clienteNombre').value;
+        const tipoC = document.getElementById('tipoClave').value;
+        const det = document.getElementById('detalles').value;
+        const pago = document.getElementById('metodoPago').value;
+        
+        let claveInfo = "No tiene";
+        if(tipoC === 'PIN/PIN') claveInfo = document.getElementById('valPin').value;
+        if(tipoC === 'Patron') claveInfo = "Dibujado - Obs: " + document.getElementById('valPatronDesc').value;
+
+        const msj = `*EA-INFORMATICA - ORDEN*%0A%0A` +
+                    `👤 *Cliente:* ${cliente}%0A` +
+                    `📱 *Equipo:* ${selectedProd}%0A` +
+                    `💰 *Presupuesto:* ${selectedPrice}%0A` +
+                    `🔑 *Seguridad:* ${claveInfo}%0A` +
+                    `📝 *Falla/Detalle:* ${det}%0A` +
+                    `💳 *Pago:* ${pago}`;
+
+        window.open(`https://wa.me/${tel}?text=${msj}`, '_blank');
+    }
+</script>
 </body>
 </html>
