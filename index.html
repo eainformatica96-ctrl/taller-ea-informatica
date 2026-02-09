@@ -29,13 +29,13 @@
             border: 2px solid var(--main-blue);
             touch-action: none;
         }
-        .patt-holder { width: 100% !important; height: 100% !important; position: relative !important; }
-        .patt-wrap { position: relative !important; width: 100% !important; height: 100% !important; }
-
         .hidden { display: none; }
         .step-title { border-left: 4px solid var(--main-blue); padding-left: 10px; margin: 15px 0; font-size: 1rem; }
         .price-tag { color: var(--main-blue); font-weight: bold; font-size: 1rem; }
-        .info-calidad { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--main-blue); border-radius: 10px; padding: 10px; font-size: 0.8rem; margin-bottom: 15px; }
+        
+        /* Avisos de Calidad y Precio Final */
+        .info-calidad { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--main-blue); border-radius: 10px; padding: 12px; font-size: 0.85rem; margin-bottom: 15px; }
+        .badge-final { background: #4caf50; color: white; padding: 2px 8px; border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -61,14 +61,15 @@
         <button class="btn btn-sm text-secondary mb-2" onclick="showStep(1)">← Volver</button>
         <h5 id="cat-selected" class="step-title"></h5>
         
-        <div id="info-modulos" class="info-calidad hidden">
-            <b>💡 Calidades:</b><br>
-            • <b>Incell:</b> Regular (Sin Garantía).<br>
-            • <b>Oled/Original:</b> Máxima (3 Meses Garantía).
+        <div class="info-calidad">
+            <div id="txt-garantia">
+                <b>💡 Calidades:</b> • <b>Incell:</b> Sin Garantía. • <b>Oled:</b> 3 Meses.
+            </div>
+            <div class="badge-final">✅ PRECIO FINAL (Repuesto + Mano de Obra incluida)</div>
         </div>
 
         <div id="search-area">
-            <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Ej: A02, S20, G8..." onkeyup="filterProducts()">
+            <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Buscar modelo (Ej: A02, S23, G42...)" oninput="filterProducts()">
         </div>
 
         <div id="productList" class="list-group"></div>
@@ -106,27 +107,20 @@
 
 <script src="https://cdn.jsdelivr.net/npm/patternlock@2.0.2/dist/patternlock.min.js"></script>
 <script>
+    // BASE DE DATOS COMPLETA (Placas y Lentes agregados)
     const db = [
-        // MÓDULOS (Tus datos anteriores)
         { cat: 'MODULOS', nombre: 'SM A01 CORE ORIG', precio: 14999 },
         { cat: 'MODULOS', nombre: 'SM A15 OLED 4G/5G', precio: 59999 },
-        // PLACAS DE CARGA (Nuevos datos)
+        { cat: 'MODULOS', nombre: 'SM S24 PLUS OLED', precio: 167599 },
         { cat: 'PLACAS', nombre: 'PLACA IPH 16 ORIG', precio: 41199 },
         { cat: 'PLACAS', nombre: 'PLACA IPH 15 PRO MAX ORIG', precio: 31099 },
         { cat: 'PLACAS', nombre: 'PLACA SAMS S24 ULTRA ORIG', precio: 24399 },
-        { cat: 'PLACAS', nombre: 'PLACA SAMS S23 ULTRA', precio: 18399 },
-        { cat: 'PLACAS', nombre: 'PLACA MOTO EDGE 50 PRO ORIG', precio: 10599 },
-        { cat: 'PLACAS', nombre: 'PLACA MOTO G75 ORIG', precio: 7099 },
-        { cat: 'PLACAS', nombre: 'PLACA XI REDMI NOTE 13 PRO ORIG', precio: 4899 },
         { cat: 'PLACAS', nombre: 'PLACA SAMS A10', precio: 1899 },
-        { cat: 'PLACAS', nombre: 'PLACA MOTO G3', precio: 799 },
-        // LENTES DE CÁMARA (Nuevos datos)
+        { cat: 'PLACAS', nombre: 'PLACA MOTO G24 ORIG', precio: 5199 },
         { cat: 'LENTES', nombre: 'LENTE IPH 12 PRO MAX', precio: 5399 },
         { cat: 'LENTES', nombre: 'LENTE SAMS S23 ULTRA', precio: 4199 },
         { cat: 'LENTES', nombre: 'LENTE XI REDMI NOTE 11', precio: 4199 },
         { cat: 'LENTES', nombre: 'LENTE TCL 20E', precio: 6799 },
-        { cat: 'LENTES', nombre: 'LENTE MOTO G54', precio: 3999 },
-        // TAPAS
         { cat: 'TAPAS', nombre: 'TAPA IPH 11 BLANCA', precio: 5699 },
         { cat: 'TAPAS', nombre: 'TAPA SM A10 NEGRA', precio: 4699 }
     ];
@@ -154,11 +148,12 @@
     function chooseCategory(cat) {
         currentCat = cat;
         document.getElementById('cat-selected').innerText = cat;
-        document.getElementById('info-modulos').classList.toggle('hidden', cat !== 'MODULOS');
+        document.getElementById('searchInput').value = ''; // Limpiar busqueda al cambiar
         showStep(2);
         filterProducts();
     }
 
+    // FUNCION DE BUSQUEDA CORREGIDA
     function filterProducts() {
         const bus = document.getElementById('searchInput').value.toLowerCase();
         const lista = document.getElementById('productList');
@@ -170,7 +165,13 @@
             return;
         }
 
+        // Filtrar por categoría Y por texto de búsqueda
         const filtrados = db.filter(p => p.cat === currentCat && p.nombre.toLowerCase().includes(bus));
+        
+        if (filtrados.length === 0) {
+            lista.innerHTML = '<div class="text-center text-secondary p-4">No se encontró el modelo.</div>';
+        }
+
         filtrados.forEach(p => {
             const precioVenta = calcularPrecioFinal(p.precio, p.nombre, p.cat);
             addBtnManual(p.nombre, precioVenta);
@@ -180,10 +181,10 @@
     function addBtnManual(nombre, precio) {
         const item = document.createElement('button');
         item.className = 'list-group-item list-group-item-action p-3';
-        item.innerHTML = `<div class="d-flex justify-content-between"><span>${nombre}</span><span class="price-tag">${precio}</span></div>`;
+        item.innerHTML = `<div class="d-flex justify-content-between align-items-center"><span>${nombre}</span><span class="price-tag">${precio}</span></div>`;
         item.onclick = () => {
             selectedProd = nombre; selectedPrice = precio;
-            document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Presupuesto: ${precio}</b>`;
+            document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Presupuesto Final: ${precio}</b>`;
             showStep(3);
             if(!lock) lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 });
             else lock.reset();
@@ -199,7 +200,7 @@
 
     function enviarWhatsApp() {
         const cliente = document.getElementById('clienteNombre').value;
-        if(!cliente) { alert("Nombre del cliente?"); return; }
+        if(!cliente) { alert("Por favor ingresa el nombre del cliente"); return; }
         const tipoC = document.getElementById('tipoClave').value;
         let claveInfo = (tipoC === 'PIN') ? document.getElementById('valPin').value : (tipoC === 'Patron') ? "Patrón dibujado ("+document.getElementById('valPatronDesc').value+")" : "Sin clave";
         const msj = `*EA-INFORMATICA - ORDEN*%0A%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Presupuesto:* ${selectedPrice}%0A🔑 *Seguridad:* ${claveInfo}%0A📝 *Falla:* ${document.getElementById('detalles').value}%0A💳 *Pago:* ${document.getElementById('metodoPago').value}`;
