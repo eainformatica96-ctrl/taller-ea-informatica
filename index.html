@@ -3,191 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Consultas - Taller</title>
-    <script src="productos.js"></script>
+    <title>EA-Informatica | Recepción</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Roboto:wght@300;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/patternlock@2.0.2/dist/patternlock.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #e74c3c;
-            --success: #27ae60;
-            --bg: #f8f9fa;
-        }
-
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; 
-            background-color: var(--bg); 
-            color: #333;
-        }
-
-        /* Encabezado */
-        header {
-            background-color: var(--primary);
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 20px auto;
-            padding: 0 15px;
-        }
-
-        /* Buscador */
-        .search-box {
-            position: sticky;
-            top: 10px;
-            z-index: 100;
-            background: white;
-            padding: 15px;
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        input {
-            width: 100%;
-            border: none;
-            outline: none;
-            font-size: 18px;
-            padding: 5px 15px;
-            background: transparent;
-        }
-
-        /* Tabla Estética */
-        .card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background-color: #ecf0f1;
-        }
-
-        th {
-            padding: 15px;
-            text-align: left;
-            font-size: 14px;
-            text-transform: uppercase;
-            color: #7f8c8d;
-        }
-
-        td {
-            padding: 15px;
-            border-bottom: 1px solid #f1f1f1;
-            font-size: 16px;
-        }
-
-        .cod-badge {
-            background: #eee;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 13px;
-        }
-
-        .product-name {
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .price-tag {
-            color: var(--success);
-            font-weight: 800;
-            font-size: 18px;
-        }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            th:nth-child(1), td:nth-child(1) { display: none; }
-            .price-tag { font-size: 16px; }
-            td { padding: 10px; }
-        }
-
-        .no-results {
-            padding: 40px;
-            text-align: center;
-            color: #95a5a6;
-        }
+        :root { --main-blue: #00d4ff; --bg-dark: #0a0a0a; --card-bg: #1a1a1a; }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Roboto', sans-serif; }
+        .header-box { text-align: center; padding: 15px; }
+        .logo-img { max-width: 90px; border-radius: 15px; border: 2px solid var(--main-blue); }
+        .title { font-family: 'Orbitron', sans-serif; color: var(--main-blue); margin-top: 10px; }
+        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-weight: bold; width: 100%; transition: 0.3s; }
+        .btn-cat:hover { border-color: var(--main-blue); background: #222; }
+        .hidden { display: none; }
+        .info-calidad { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--main-blue); border-radius: 10px; padding: 15px; margin-bottom: 15px; font-size: 0.9rem; }
+        .badge-final { background: #28a745; color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 10px; }
+        .list-group-item { background: var(--card-bg); color: white; border: 1px solid #333; margin-bottom: 5px; border-radius: 10px !important; cursor: pointer; }
+        .price-tag { color: var(--main-blue); font-weight: bold; }
+        #patternContainer { margin: 10px auto; width: 280px !important; height: 280px !important; background: #222; border-radius: 15px; border: 2px solid var(--main-blue); touch-action: none; }
     </style>
 </head>
 <body>
 
-<header>
-    <h2 style="margin:0">GESTIÓN DE REPUESTOS</h2>
-</header>
-
-<div class="container">
-    <div class="search-box">
-        🔍 <input type="text" id="mainSearch" placeholder="Buscar por modelo, marca o código..." autofocus>
+<div class="container py-3" style="max-width: 450px;">
+    <div class="header-box">
+        <img src="https://raw.githubusercontent.com/eainformatica96-ctrl/Taller-EA-Informatica/main/Taller.png" alt="Logo" class="logo-img">
+        <h2 class="title">EA-INFORMATICA</h2>
     </div>
 
-    <div class="card">
-        <table>
-            <thead>
-                <tr>
-                    <th>Cod</th>
-                    <th>Descripción</th>
-                    <th style="text-align: right;">Precio</th>
-                </tr>
-            </thead>
-            <tbody id="inventoryBody">
-                </tbody>
-        </table>
-        <div id="emptyState" class="no-results" style="display:none">
-            No se encontraron repuestos con ese nombre.
+    <div id="step-1">
+        <h5 class="mb-3">Seleccione el servicio:</h5>
+        <div class="row g-2">
+            <div class="col-6"><button class="btn-cat" onclick="chooseCategory('MODULOS')">📱 Módulos</button></div>
+            <div class="col-6"><button class="btn-cat" onclick="chooseCategory('TAPAS')">📲 Tapas</button></div>
+            <div class="col-6"><button class="btn-cat" onclick="chooseCategory('PLACAS')">🔌 Placas Carga</button></div>
+            <div class="col-6"><button class="btn-cat" onclick="chooseCategory('LENTES')">📷 Lentes Cam.</button></div>
+        </div>
+    </div>
+
+    <div id="step-2" class="hidden">
+        <button class="btn btn-sm text-secondary mb-2" onclick="showStep(1)">← Volver</button>
+        <div class="info-calidad">
+            <b>Información:</b> Precios actualizados según proveedor.<br>
+            <div class="badge-final">✅ PRECIO FINAL (Repuesto + Mano de Obra)</div>
+        </div>
+        <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Buscar modelo (Ej: A02, S23, G42...)" oninput="filterProducts()">
+        <div id="productList" class="list-group"></div>
+    </div>
+
+    <div id="step-3" class="hidden">
+        <button class="btn btn-sm text-secondary mb-2" onclick="showStep(2)">← Volver</button>
+        <div class="card bg-dark border-secondary p-3">
+            <p id="resumen-equipo" class="text-info"></p>
+            <input type="text" id="clienteNombre" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Nombre del Cliente">
+            <select id="tipoClave" class="form-select bg-dark text-white border-secondary mb-3" onchange="toggleClave()">
+                <option value="Sin Clave">Sin Clave</option>
+                <option value="PIN">PIN / Contraseña</option>
+                <option value="Patron">Patrón</option>
+            </select>
+            <div id="div-patron" class="hidden text-center"><div id="patternContainer"></div></div>
+            <textarea id="detalles" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Fallas detectadas / Observaciones"></textarea>
+            <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold">ENVIAR ORDEN</button>
         </div>
     </div>
 </div>
 
+<script src="productos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/patternlock@2.0.2/dist/patternlock.min.js"></script>
 <script>
-    const inventoryBody = document.getElementById('inventoryBody');
-    const mainSearch = document.getElementById('mainSearch');
-    const emptyState = document.getElementById('emptyState');
+    let currentCat = '', selectedProd = '', selectedPrice = '', lock;
 
-    function updateView() {
-        const query = mainSearch.value.toLowerCase();
-        inventoryBody.innerHTML = '';
-        
-        const filtered = db.filter(item => {
-            return Object.values(item).some(val => 
-                val && val.toString().toLowerCase().includes(query)
-            );
-        });
-
-        if (filtered.length > 0) {
-            emptyState.style.display = 'none';
-            filtered.forEach(item => {
-                const vals = Object.values(item);
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><span class="cod-badge">${vals[0]}</span></td>
-                    <td><span class="product-name">${vals[1]}</span></td>
-                    <td style="text-align: right;"><span class="price-tag">${vals[vals.length - 1]}</span></td>
-                `;
-                inventoryBody.appendChild(row);
-            });
+    // FÓRMULA DE COSTOS
+    function calcularPrecioFinal(base, nombre, cat) {
+        let total = 0;
+        if (cat === 'MODULOS') {
+            const costoEnvio = 15000;
+            const manoObra = nombre.toLowerCase().includes('iph') ? 50000 : 25000;
+            total = (base + costoEnvio) * 2 + manoObra;
         } else {
-            emptyState.style.display = 'block';
+            total = (base + 5000) * 2 + 8000; 
         }
+        return Math.round(total).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
     }
 
-    mainSearch.addEventListener('input', updateView);
+    function chooseCategory(cat) {
+        currentCat = cat;
+        document.getElementById('searchInput').value = '';
+        showStep(2);
+        filterProducts();
+    }
 
-    // Carga inicial
-    window.onload = updateView;
+    // BUSQUEDA INTELIGENTE ADAPTADA A EXCEL SUCIO
+    function filterProducts() {
+        const bus = document.getElementById('searchInput').value.toLowerCase();
+        const lista = document.getElementById('productList');
+        lista.innerHTML = '';
+        
+        // El secreto: usamos Object.values() para que no importen los nombres de las columnas
+        const filtrados = db.filter(item => {
+            const valores = Object.values(item);
+            
+            // Verificamos si la fila contiene la categoría (buscando en los valores)
+            const coincideCat = valores.some(v => v.toString().toUpperCase().includes(currentCat));
+            // Verificamos si coincide el modelo escrito
+            const coincideBus = valores.some(v => v.toString().toLowerCase().includes(bus));
+            
+            return coincideCat && coincideBus;
+        });
+        
+        filtrados.forEach(item => {
+            const valores = Object.values(item);
+            
+            // Mapeo por posición para evitar errores de nombres con espacios
+            const nombreProd = valores[1] || "Sin nombre";
+            
+            // Limpieza del precio: quita $, puntos y espacios para poder calcular
+            const precioTexto = valores[valores.length - 1].toString();
+            const precioBase = parseFloat(precioTexto.replace(/[$. ]/g, "")) || 0;
+
+            const final = calcularPrecioFinal(precioBase, nombreProd, currentCat);
+            
+            const btn = document.createElement('button');
+            btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+            btn.innerHTML = `<span>${nombreProd}</span> <span class="price-tag">${final}</span>`;
+            
+            btn.onclick = () => {
+                selectedProd = nombreProd; 
+                selectedPrice = final;
+                document.getElementById('resumen-equipo').innerHTML = `<b>Producto:</b> ${nombreProd}<br><b>Total:</b> ${final}`;
+                showStep(3);
+                if(!lock) lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 });
+            };
+            lista.appendChild(btn);
+        });
+    }
+
+    function showStep(s) {
+        document.querySelectorAll('[id^="step-"]').forEach(el => el.classList.add('hidden'));
+        document.getElementById('step-' + s).classList.remove('hidden');
+    }
+
+    function toggleClave() {
+        const t = document.getElementById('tipoClave').value;
+        document.getElementById('div-patron').classList.toggle('hidden', t !== 'Patron');
+    }
+
+    function enviarWhatsApp() {
+        const nombre = document.getElementById('clienteNombre').value;
+        const clave = document.getElementById('tipoClave').value;
+        const obs = document.getElementById('detalles').value;
+        
+        const msj = `*EA-INFORMATICA*%0A*Cliente:* ${nombre}%0A*Equipo:* ${selectedProd}%0A*Presupuesto:* ${selectedPrice}%0A*Clave:* ${clave}%0A*Detalles:* ${obs}`;
+        window.open(`https://wa.me/5493854416248?text=${msj}`, '_blank');
+    }
 </script>
-
 </body>
 </html>
