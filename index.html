@@ -10,31 +10,27 @@
     
     <style>
         :root { --main-blue: #00d4ff; --bg-dark: #0a0a0a; --card-bg: #1a1a1a; }
-        body { background-color: var(--bg-dark); color: white; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Roboto', sans-serif; }
         .header-box { text-align: center; padding: 15px; }
         .logo-img { max-width: 90px; border-radius: 15px; border: 2px solid var(--main-blue); margin-bottom: 5px; }
         .title { font-family: 'Orbitron', sans-serif; color: var(--main-blue); font-size: 1.2rem; }
         
-        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; transition: 0.3s; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; }
+        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; transition: 0.3s; margin-bottom: 10px; font-weight: bold; }
         .btn-cat:hover { border-color: var(--main-blue); background: #222; }
 
         .list-group-item { background: var(--card-bg); color: white; border: 1px solid #333; margin-bottom: 5px; border-radius: 10px !important; cursor: pointer; }
         
-        #patternContainer { 
-            margin: 10px auto; 
-            width: 280px !important; 
-            height: 280px !important; 
-            background: #222; 
-            border-radius: 15px; 
-            border: 2px solid var(--main-blue);
-            touch-action: none;
-        }
+        #patternContainer { margin: 10px auto; width: 280px !important; height: 280px !important; background: #222; border-radius: 15px; border: 2px solid var(--main-blue); touch-action: none; }
         .hidden { display: none; }
         .step-title { border-left: 4px solid var(--main-blue); padding-left: 10px; margin: 15px 0; font-size: 1rem; }
         .price-tag { color: var(--main-blue); font-weight: bold; font-size: 1rem; }
         
         .info-calidad { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--main-blue); border-radius: 10px; padding: 12px; font-size: 0.85rem; margin-bottom: 15px; }
         .badge-final { background: #4caf50; color: white; padding: 2px 8px; border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 5px; }
+        
+        .table-soft { width: 100%; color: white; font-size: 0.9rem; border-collapse: separate; border-spacing: 0 5px; }
+        .table-soft td { background: #222; padding: 12px; border: 1px solid #333; }
+        .table-soft tr:hover td { border-color: var(--main-blue); }
     </style>
 </head>
 <body>
@@ -46,13 +42,12 @@
     </div>
 
     <div id="step-1">
-        <h5 class="step-title">¿Qué servicio necesitas?</h5>
+        <h5 class="step-title">Seleccione una Categoría</h5>
         <div class="row g-2">
             <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('MODULOS')">📱 Módulos</button></div>
-            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('TAPAS')">📲 Tapas</button></div>
-            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('PLACAS')">🔌 Placas Carga</button></div>
-            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('LENTES')">📷 Lentes Cam.</button></div>
-            <div class="col-12"><button class="btn btn-cat w-100" onclick="chooseCategory('SOFTWARE')">💻 Software / Cuentas</button></div>
+            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('BATERIAS')">🔋 Baterías</button></div>
+            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('PARTES CHICAS')">🔌 Partes Chicas</button></div>
+            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('SOFTWARE')">💻 Software</button></div>
         </div>
     </div>
 
@@ -60,14 +55,12 @@
         <button class="btn btn-sm text-secondary mb-2" onclick="showStep(1)">← Volver</button>
         <h5 id="cat-selected" class="step-title"></h5>
         
-        <div class="info-calidad">
-            <div id="txt-garantia">
-                <b>💡 Calidades:</b> • <b>Incell:</b> Sin Garantía. • <b>Oled:</b> 3 Meses.
-            </div>
-            <div class="badge-final">✅ PRECIO FINAL (Mano de obra incluida)</div>
+        <div id="box-garantia" class="info-calidad hidden">
+            <b>💡 Calidades:</b> • <b>Incell:</b> Sin Garantía. • <b>Oled:</b> 3 Meses.
+            <br><span class="badge-final">✅ PRECIO FINAL (Repuesto + Mano de Obra)</span>
         </div>
 
-        <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Buscar modelo..." oninput="filterProducts()">
+        <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary mb-3" oninput="filterProducts()">
         <div id="productList" class="list-group"></div>
     </div>
 
@@ -76,28 +69,22 @@
         <h5 class="step-title">Datos de la Orden</h5>
         <div class="card bg-dark border-secondary p-3">
             <p id="resumen-equipo" class="text-info small mb-3"></p>
-            
             <input type="text" id="clienteNombre" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Nombre del Cliente">
-            
             <select id="tipoClave" class="form-select bg-dark text-white border-secondary mb-3" onchange="toggleClave()">
                 <option value="Sin Clave">Sin Clave</option>
                 <option value="PIN">PIN / Contraseña</option>
                 <option value="Patron">Patrón de Dibujo</option>
             </select>
-
             <div id="div-pin" class="hidden"><input type="text" id="valPin" class="form-control mb-3" placeholder="Escriba la clave"></div>
             <div id="div-patron" class="hidden text-center">
                 <div id="patternContainer"></div>
-                <input type="text" id="valPatronDesc" class="form-control mb-3" placeholder="Aclaración (Ej: Una L)">
+                <input type="text" id="valPatronDesc" class="form-control mb-3" placeholder="Aclaración del dibujo">
             </div>
-
-            <textarea id="detalles" class="form-control bg-dark text-white border-secondary mb-3" rows="2" placeholder="Fallas o detalles del equipo"></textarea>
-            
+            <textarea id="detalles" class="form-control bg-dark text-white border-secondary mb-3" rows="2" placeholder="Fallas o detalles adicionales"></textarea>
             <select id="metodoPago" class="form-select bg-dark text-white border-secondary mb-3">
                 <option value="Efectivo">Efectivo</option>
                 <option value="Transferencia">Transferencia</option>
             </select>
-
             <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold py-3">ENVIAR A WHATSAPP</button>
         </div>
     </div>
@@ -109,22 +96,14 @@
 <script>
     let currentCat = '', selectedProd = '', selectedPrice = '', lock;
 
-    // --- TUS FORMULAS ORIGINALES CORREGIDAS ---
     function calcularPrecioFinal(base, nombre, cat) {
-        if (cat === 'TAPAS' || cat === 'LENTES') {
-            return Math.round((base + 3000) * 2).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
-        }
-        if (cat === 'PLACAS') {
-            return Math.round((base + 4000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
-        }
         if (cat === 'MODULOS') {
             const costoEnvio = 15000;
-            // AJUSTE: Bajamos de 20.000 a 10.000 para corregir la diferencia
             const manoObra = nombre.toLowerCase().includes('iph') ? 50000 : 10000; 
-            let total = (base + costoEnvio) * 2 + manoObra;
-            return total.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+            return Math.round((base + costoEnvio) * 2 + manoObra).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        return base.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+        // Para Baterías y Partes Chicas (Ajusta la fórmula si necesitas una distinta)
+        return Math.round((base + 4000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
     }
 
     function showStep(s) {
@@ -134,63 +113,68 @@
 
     function chooseCategory(cat) {
         currentCat = cat;
-        document.getElementById('cat-selected').innerText = "Servicio: " + cat;
-        document.getElementById('searchInput').value = ''; 
+        document.getElementById('cat-selected').innerText = cat;
+        
+        // Mostrar garantía solo en módulos
+        document.getElementById('box-garantia').classList.toggle('hidden', cat !== 'MODULOS');
+        
+        // Prehold/Placeholder dinámico
+        document.getElementById('searchInput').placeholder = `Buscar en ${cat} (Ej: A10, S23, G52...)`;
+        document.getElementById('searchInput').value = '';
+        
         showStep(2);
         filterProducts();
     }
 
-    // --- BUSCADOR INTELIGENTE PARA productos.js ---
     function filterProducts() {
         const bus = document.getElementById('searchInput').value.toLowerCase();
         const lista = document.getElementById('productList');
         lista.innerHTML = '';
 
         if (currentCat === 'SOFTWARE') {
-            addBtnManual("Sistema Operativo / Flasheo", "$15.000");
-            addBtnManual("Cuenta Google (FRP)", "$20.000");
-            addBtnManual("Cuenta Xiaomi / Samsung", "$25.000");
+            document.getElementById('searchInput').classList.add('hidden');
+            lista.innerHTML = `
+                <table class="table-soft">
+                    <tr onclick="selectManual('Sistema Operativo / Flasheo', '$20.000')"><td>Sistema Operativo / Flasheo</td><td class="text-end">$20.000</td></tr>
+                    <tr onclick="selectManual('Cuenta Google (FRP)', '$35.000')"><td>Cuenta Google (FRP)</td><td class="text-end">$35.000</td></tr>
+                    <tr onclick="selectManual('Eliminar Patrón / PIN', '$20.000')"><td>Eliminar Patrón / PIN</td><td class="text-end">$20.000</td></tr>
+                    <tr onclick="selectManual('Eliminar Virus Publicitario', '$5.000')"><td>Eliminar Virus Publicitario</td><td class="text-end">$5.000</td></tr>
+                </table>`;
             return;
         }
 
-        // Busca en todas las columnas del JSON (Object.values)
+        document.getElementById('searchInput').classList.remove('hidden');
+        
         const filtrados = db.filter(item => {
             const valores = Object.values(item).map(v => v.toString().toLowerCase());
-            const coincideCat = valores.some(v => v.includes(currentCat.toLowerCase()));
-            const coincideBus = valores.some(v => v.includes(bus));
-            return coincideCat && coincideBus;
+            return valores.some(v => v.includes(currentCat.toLowerCase())) && valores.some(v => v.includes(bus));
         });
 
         if (filtrados.length === 0) {
-            lista.innerHTML = '<div class="text-center text-secondary p-4">No se encontró el modelo.</div>';
+            lista.innerHTML = '<div class="text-center text-secondary p-4">No se encontró el repuesto.</div>';
         }
 
         filtrados.forEach(item => {
             const fila = Object.values(item);
-            const nombreProd = fila[1]; // Nombre suele estar en la segunda col
-            const precioRaw = fila[fila.length - 1].toString(); // Precio suele estar al final
+            const nombreProd = fila[1];
+            const precioRaw = fila[fila.length - 1].toString();
             const precioBase = parseFloat(precioRaw.replace(/[$. ]/g, "")) || 0;
-
             const final = calcularPrecioFinal(precioBase, nombreProd, currentCat);
-            addBtnManual(nombreProd, final);
+            
+            const btn = document.createElement('button');
+            btn.className = 'list-group-item list-group-item-action p-3';
+            btn.innerHTML = `<div class="d-flex justify-content-between align-items-center"><span>${nombreProd}</span><span class="price-tag">${final}</span></div>`;
+            btn.onclick = () => selectManual(nombreProd, final);
+            lista.appendChild(btn);
         });
     }
 
-    function addBtnManual(nombre, precio) {
-        const item = document.createElement('button');
-        item.className = 'list-group-item list-group-item-action p-3';
-        item.innerHTML = `<div class="d-flex justify-content-between align-items-center"><span>${nombre}</span><span class="price-tag">${precio}</span></div>`;
-        item.onclick = () => {
-            selectedProd = nombre; selectedPrice = precio;
-            document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Presupuesto Final: ${precio}</b>`;
-            showStep(3);
-            if(!lock) {
-                lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 });
-            } else {
-                lock.reset();
-            }
-        };
-        document.getElementById('productList').appendChild(item);
+    function selectManual(nombre, precio) {
+        selectedProd = nombre; selectedPrice = precio;
+        document.getElementById('resumen-equipo').innerHTML = `<b>📦 ${nombre}</b><br><b>💰 Precio Final: ${precio}</b>`;
+        showStep(3);
+        if(!lock) lock = new PatternLock("#patternContainer", { margin: 25, radius: 12 });
+        else lock.reset();
     }
 
     function toggleClave() {
@@ -201,11 +185,10 @@
 
     function enviarWhatsApp() {
         const cliente = document.getElementById('clienteNombre').value;
-        if(!cliente) { alert("Por favor ingresa el nombre del cliente"); return; }
+        if(!cliente) { alert("Nombre del cliente obligatorio"); return; }
         const tipoC = document.getElementById('tipoClave').value;
-        let claveInfo = (tipoC === 'PIN') ? document.getElementById('valPin').value : (tipoC === 'Patron') ? "Patrón dibujado ("+document.getElementById('valPatronDesc').value+")" : "Sin clave";
-        
-        const msj = `*EA-INFORMATICA - ORDEN*%0A%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Presupuesto:* ${selectedPrice}%0A🔑 *Seguridad:* ${claveInfo}%0A📝 *Falla:* ${document.getElementById('detalles').value}%0A💳 *Pago:* ${document.getElementById('metodoPago').value}`;
+        let claveInfo = (tipoC === 'PIN') ? document.getElementById('valPin').value : (tipoC === 'Patron') ? "Patrón ("+document.getElementById('valPatronDesc').value+")" : "Sin clave";
+        const msj = `*EA-INFORMATICA*%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Presupuesto:* ${selectedPrice}%0A🔑 *Seguridad:* ${claveInfo}%0A📝 *Falla:* ${document.getElementById('detalles').value}%0A💳 *Pago:* ${document.getElementById('metodoPago').value}`;
         window.open(`https://wa.me/5493854416248?text=${msj}`, '_blank');
     }
 </script>
