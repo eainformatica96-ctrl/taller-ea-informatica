@@ -40,9 +40,9 @@
     <div id="step-1">
         <h5 class="step-title">Seleccione una Categoría</h5>
         <div class="row g-2">
-            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('MODULOS')">📱 Módulos</button></div>
-            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('BATERIAS')">🔋 Baterías</button></div>
-            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('PIN DE CARGA')">🔌 Partes Chicas</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('Módulos')">📱 Módulos</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('Baterías')">🔋 Baterías</button></div>
+            <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('PartesChicas')">🔌 Partes Chicas</button></div>
             <div class="col-6"><button class="btn btn-cat" onclick="chooseCategory('SOFTWARE')">💻 Software</button></div>
         </div>
     </div>
@@ -76,66 +76,30 @@
     </div>
 </div>
 
-<!-- Cargar base de datos -->
+<!-- Cargar base de datos NORMALIZADA -->
 <script src="https://eainformatica96-ctrl.github.io/Taller-EA-Informatica/productos.js"></script>
-
-<!-- NORMALIZAR BASE DE DATOS (¡CLAVE PARA QUE FUNCIONE!) -->
-<script>
-// Normalizar estructura de datos para el frontend
-if (typeof db !== 'undefined' && Array.isArray(db)) {
-  db = db.map(item => {
-    // Extraer nombre del producto (la clave que NO es COD ni PRECIO)
-    const keys = Object.keys(item);
-    const productKey = keys.find(k => k !== 'COD' && k !== ' PRECIO' && k.trim() !== '');
-    const productName = item[productKey] ? item[productKey].trim() : '';
-    
-    // Limpiar y convertir precio a número
-    const rawPrice = item[' PRECIO'] || item['PRECIO'] || '';
-    const cleanPrice = parseInt(rawPrice.replace(/\D/g, '')) || 0;
-    
-    // Determinar categoría según el nombre del producto
-    let category = 'PIN DE CARGA'; // Categoría por defecto
-    const upperName = productName.toUpperCase();
-    
-    if (upperName.startsWith('MODULOS')) category = 'MODULOS';
-    else if (upperName.startsWith('BATERIA')) category = 'BATERIAS';
-    // "PIN DE CARGA" ya es el valor por defecto para: PLACAS, LENTES, TAPAS, FLEX, etc.
-    
-    return {
-      COD: item.COD,
-      CATEGORIA: category,
-      PRODUCTO: productName,
-      PRECIO: cleanPrice
-    };
-  });
-  console.log(`✅ Base de datos normalizada. ${db.length} productos listos.`);
-} else {
-  console.error('❌ Error: Base de datos "db" no encontrada o inválida');
-  alert('Error crítico: No se cargó la base de datos de productos. Verifica la consola.');
-}
-</script>
-
 <script src="https://cdn.jsdelivr.net/npm/patternlock@2.0.2/dist/patternlock.min.js"></script>
 
 <script>
     let currentCat = '', selectedProd = '', selectedPrice = '', lock;
 
+    // Función para calcular precio final según categoría
     function calcularPrecioFinal(base, nombre, cat) {
         let n = nombre.toLowerCase();
-        let c = cat.toUpperCase();
-        let b = typeof base === 'number' ? base : parseFloat(base.toString().replace(/\D/g, "")) || 0;
-
-        if (c.includes('MODULO')) {
+        let categoriaReal = cat; // Ya usamos las categorías reales de la BD
+        
+        if (categoriaReal === 'Módulos') {
             const extraIphone = n.includes('iph') ? 50000 : 10000; 
-            return Math.round((b + 15000) * 2 + extraIphone).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+            return Math.round((base + 15000) * 2 + extraIphone).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        if (c.includes('BATERIA')) {
-            return Math.round((b + 5000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        if (categoriaReal === 'Baterías') {
+            return Math.round((base + 5000) * 2 + 5000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        if (c.includes('PIN')) {
-            return Math.round((b + 3000) * 2 + 8000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        if (categoriaReal === 'PartesChicas') {
+            // Aplica fórmula para Placas/Flex/Lentes/Tapas
+            return Math.round((base + 3000) * 2 + 8000).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
         }
-        return b.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+        return base.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
     }
 
     function showStep(s) {
@@ -145,7 +109,14 @@ if (typeof db !== 'undefined' && Array.isArray(db)) {
 
     function chooseCategory(cat) {
         currentCat = cat;
-        document.getElementById('cat-selected').innerText = "Sección: " + cat;
+        // Mostrar nombre amigable en el título
+        const nombresAmigables = {
+            'Módulos': 'MÓDULOS',
+            'Baterías': 'BATERÍAS',
+            'PartesChicas': 'PARTES CHICAS (Placas, Flex, Lentes, Tapas)',
+            'SOFTWARE': 'SOFTWARE'
+        };
+        document.getElementById('cat-selected').innerText = "Sección: " + nombresAmigables[cat];
         document.getElementById('searchInput').value = '';
         showStep(2);
         filterProducts();
@@ -171,32 +142,44 @@ if (typeof db !== 'undefined' && Array.isArray(db)) {
             return;
         }
 
-        // Botón manual para Pin Universal en "Partes Chicas"
-        if (currentCat === 'PIN DE CARGA' && (bus === '' || bus.includes('pin universal') || bus.includes('carga universal'))) {
-            addBtn("Pin de Carga Universal", "$30.000", false);
-        }
-
         // Validar que db esté cargada
         if (typeof db === 'undefined' || !Array.isArray(db)) {
-            lista.innerHTML = `<div class="text-danger p-3">⚠️ Error: Base de datos no disponible. Recarga la página.</div>`;
+            lista.innerHTML = `<div class="text-danger p-3">⚠️ Error: Base de datos no disponible. Verifique la consola.</div>`;
+            console.error("Base de datos 'db' no encontrada o no es un array");
             return;
         }
 
-        // Filtrar productos normalizados
+        // Mapear categoría del botón a categorías reales de la BD
+        let categoriasFiltro = [];
+        if (currentCat === 'Módulos') categoriasFiltro = ['Módulos'];
+        else if (currentCat === 'Baterías') categoriasFiltro = ['Baterías'];
+        else if (currentCat === 'PartesChicas') {
+            // Incluye TODAS las partes chicas: Placas, Flex, Lentes, Tapas
+            categoriasFiltro = ['Placas', 'Flex', 'Lentes', 'Tapas'];
+            // Mostrar pin universal solo en Partes Chicas
+            if (bus === '' || bus.includes('pin universal') || bus.includes('carga universal')) {
+                addBtn("Pin de Carga Universal", "$30.000", false);
+            }
+        }
+
+        // Filtrar productos
         const filtrados = db.filter(item => {
-            return item.CATEGORIA === currentCat && 
-                   item.PRODUCTO.toLowerCase().includes(bus);
+            const coincideCategoria = categoriasFiltro.includes(item.Categoría);
+            const coincideBusqueda = item.Nombre.toLowerCase().includes(bus);
+            return coincideCategoria && coincideBusqueda;
         });
 
+        // Mensaje si no hay resultados
         if (filtrados.length === 0 && bus !== '') {
             lista.innerHTML = `<div class="text-center p-3 text-muted">🔍 No se encontraron resultados para "${bus}"</div>`;
             return;
         }
 
-        // Mostrar resultados (máximo 50 para rendimiento)
+        // Mostrar resultados (máximo 50)
         filtrados.slice(0, 50).forEach(item => {
-            const precioFinal = calcularPrecioFinal(item.PRECIO, item.PRODUCTO, item.CATEGORIA);
-            addBtn(item.PRODUCTO, precioFinal, false);
+            const precioBase = parseInt(item.Precio) || 0;
+            const precioFinal = calcularPrecioFinal(precioBase, item.Nombre, currentCat);
+            addBtn(item.Nombre, precioFinal, false);
         });
     }
 
@@ -230,14 +213,9 @@ if (typeof db !== 'undefined' && Array.isArray(db)) {
         const tipoClave = document.getElementById('tipoClave').value;
         let claveInfo = "";
 
-        if (tipoClave === 'PIN') {
-            const pinVal = document.getElementById('valPin').value.trim();
-            claveInfo = pinVal ? `🔑 *Clave:* ${pinVal}` : "🔑 *Clave:* [No especificada]";
-        } else if (tipoClave === 'Patron') {
-            claveInfo = "🌀 *Patrón:* (Dibujado en dispositivo)";
-        } else {
-            claveInfo = "🔓 Sin clave de seguridad";
-        }
+        if (tipoClave === 'PIN') claveInfo = "🔑 *Clave:* " + (document.getElementById('valPin').value.trim() || "[No especificada]");
+        if (tipoClave === 'Patron') claveInfo = "🌀 *Patrón:* (Dibujado en dispositivo)";
+        if (tipoClave === 'Sin Clave') claveInfo = "🔓 Sin clave de seguridad";
 
         if (!cliente) {
             alert("⚠️ Por favor ingresa el nombre del cliente");
@@ -248,6 +226,17 @@ if (typeof db !== 'undefined' && Array.isArray(db)) {
         const msj = `*EA-INFORMATICA*%0A%0A👤 *Cliente:* ${cliente}%0A📱 *Equipo:* ${selectedProd}%0A💰 *Presupuesto:* ${selectedPrice}%0A${claveInfo}%0A📝 *Detalles:* ${detalles || "[Sin detalles]"}`;
         window.open(`https://wa.me/5493854416248?text=${encodeURIComponent(msj)}`, '_blank');
     }
+
+    // Verificación al cargar
+    window.addEventListener('load', () => {
+        if (typeof db !== 'undefined' && Array.isArray(db)) {
+            console.log(`✅ Base de datos cargada correctamente. Total de productos: ${db.length}`);
+            console.log("Categorías disponibles:", [...new Set(db.map(item => item.Categoría))].join(', '));
+        } else {
+            console.error("❌ Error crítico: La base de datos 'db' no se cargó correctamente");
+            alert("Error: No se pudo cargar la base de datos de productos. Verifique la consola del navegador.");
+        }
+    });
 </script>
 </body>
 </html>
