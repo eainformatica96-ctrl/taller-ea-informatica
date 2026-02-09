@@ -10,24 +10,23 @@
     
     <style>
         :root { --main-blue: #00d4ff; --bg-dark: #0a0a0a; --card-bg: #1a1a1a; }
-        body { background-color: var(--bg-dark); color: white; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
         .header-box { text-align: center; padding: 20px; }
-        .logo-img { max-width: 150px; border-radius: 20px; margin-bottom: 10px; border: 2px solid var(--main-blue); }
-        .title { font-family: 'Orbitron', sans-serif; color: var(--main-blue); letter-spacing: 2px; }
+        .logo-img { max-width: 120px; border-radius: 20px; border: 2px solid var(--main-blue); margin-bottom: 10px; }
+        .title { font-family: 'Orbitron', sans-serif; color: var(--main-blue); font-size: 1.5rem; }
         
-        /* Botones de Categoría */
-        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; height: 120px; border-radius: 15px; transition: 0.3s; }
-        .btn-cat:hover { border-color: var(--main-blue); transform: translateY(-5px); background: #222; }
-        .btn-cat i { font-size: 2rem; display: block; margin-bottom: 10px; }
+        .btn-cat { background: var(--card-bg); border: 1px solid #333; color: white; padding: 20px; border-radius: 15px; transition: 0.3s; margin-bottom: 10px; }
+        .btn-cat:hover { border-color: var(--main-blue); background: #222; }
 
-        /* Buscador y Resultados */
-        .list-group-item { background: var(--card-bg); color: white; border: 1px solid #333; cursor: pointer; }
-        .list-group-item:hover { background: #333; border-color: var(--main-blue); }
+        .list-group-item { background: var(--card-bg); color: white; border: 1px solid #333; margin-bottom: 5px; border-radius: 10px !important; }
         
-        /* Patrón Visual */
-        #patternContainer { margin: 10px auto; background: #222; border-radius: 10px; padding: 10px; width: 280px; }
+        /* Ajuste del Patrón para que sea 3x3 */
+        #patternContainer { margin: 20px auto; width: 300px !important; height: 300px !important; background: #222; border-radius: 15px; border: 2px solid var(--main-blue); }
+        .patt-holder { width: 100% !important; height: 100% !important; }
+
         .hidden { display: none; }
-        .step-title { border-left: 4px solid var(--main-blue); padding-left: 10px; margin-bottom: 20px; }
+        .step-title { border-left: 4px solid var(--main-blue); padding-left: 10px; margin: 20px 0; font-size: 1.1rem; }
+        .price-tag { color: var(--main-blue); font-weight: bold; font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -36,97 +35,100 @@
     <div class="header-box">
         <img src="https://raw.githubusercontent.com/eainformatica96-ctrl/Taller-EA-Informatica/main/Taller.png" alt="Logo" class="logo-img">
         <h2 class="title">EA-INFORMATICA</h2>
-        <p class="text-secondary small">Servicio Técnico Especializado</p>
     </div>
 
     <div id="step-1">
-        <h5 class="step-title">¿Qué servicio necesitas?</h5>
-        <div class="row g-3">
+        <h5 class="step-title">Seleccione un servicio</h5>
+        <div class="row g-2">
             <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('MODULOS')">📱 Módulos</button></div>
             <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('BATERIAS')">🔋 Baterías</button></div>
             <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('PARTES')">🔌 Partes Chicas</button></div>
-            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('SOFTWARE')">💻 Software / Cuentas</button></div>
+            <div class="col-6"><button class="btn btn-cat w-100" onclick="chooseCategory('SOFTWARE')">💻 Software</button></div>
         </div>
     </div>
 
     <div id="step-2" class="hidden">
-        <button class="btn btn-sm btn-link text-secondary p-0 mb-3" onclick="showStep(1)">← Volver atrás</button>
-        <h5 id="cat-selected" class="step-title">Buscando...</h5>
-        <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Escribe modelo (ej: Moto G8, A32...)" onkeyup="filterProducts()">
+        <button class="btn btn-sm text-secondary mb-3" onclick="showStep(1)">← Volver</button>
+        <h5 id="cat-selected" class="step-title"></h5>
+        
+        <div id="search-area">
+            <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary mb-3" placeholder="Ej: A02, S20, G8..." onkeyup="filterProducts()">
+        </div>
+
         <div id="productList" class="list-group"></div>
     </div>
 
     <div id="step-3" class="hidden">
-        <button class="btn btn-sm btn-link text-secondary p-0 mb-3" onclick="showStep(2)">← Cambiar equipo</button>
-        <h5 class="step-title">Datos del Cliente</h5>
+        <button class="btn btn-sm text-secondary mb-3" onclick="showStep(2)">← Volver</button>
+        <h5 class="step-title">Finalizar Orden</h5>
         
         <div class="card bg-dark border-secondary p-3">
-            <p class="text-info mb-1" id="resumen-equipo"></p>
-            <div class="mb-3">
-                <label class="small text-secondary">Nombre Completo</label>
-                <input type="text" id="clienteNombre" class="form-control bg-dark text-white border-secondary">
-            </div>
+            <p class="mb-3 text-info" id="resumen-equipo"></p>
+            
+            <label class="small text-secondary">Nombre del Cliente</label>
+            <input type="text" id="clienteNombre" class="form-control bg-dark text-white border-secondary mb-3">
 
-            <div class="mb-3">
-                <label class="small text-secondary">Seguridad de Pantalla</label>
-                <select id="tipoClave" class="form-select bg-dark text-white border-secondary" onchange="toggleClave()">
-                    <option value="Sin Clave">Sin Clave</option>
-                    <option value="PIN/PIN">PIN o Contraseña</option>
-                    <option value="Patron">Patrón de Dibujo</option>
-                </select>
-            </div>
+            <label class="small text-secondary">Seguridad</label>
+            <select id="tipoClave" class="form-select bg-dark text-white border-secondary mb-3" onchange="toggleClave()">
+                <option value="Sin Clave">Sin Clave</option>
+                <option value="PIN">PIN o Contraseña</option>
+                <option value="Patron">Patrón de Dibujo</option>
+            </select>
 
-            <div id="div-pin" class="mb-3 hidden">
-                <input type="text" id="valPin" class="form-control" placeholder="Ingrese PIN o Contraseña">
-            </div>
-
-            <div id="div-patron" class="mb-3 hidden text-center">
+            <div id="div-pin" class="hidden"><input type="text" id="valPin" class="form-control mb-3" placeholder="Escriba la clave"></div>
+            <div id="div-patron" class="hidden text-center">
                 <div id="patternContainer"></div>
-                <input type="text" id="valPatronDesc" class="form-control mt-2" placeholder="Aclaración (ej: Una L, una Z)">
+                <input type="text" id="valPatronDesc" class="form-control mb-3" placeholder="Aclaración (ej: Una L)">
             </div>
 
-            <div class="mb-3">
-                <label class="small text-secondary">Detalles adicionales / Fallas</label>
-                <textarea id="detalles" class="form-control bg-dark text-white border-secondary" rows="2" placeholder="Ej: No funciona el táctil, cuenta google..."></textarea>
-            </div>
+            <label class="small text-secondary">Detalles/Fallas</label>
+            <textarea id="detalles" class="form-control bg-dark text-white border-secondary mb-3" rows="2"></textarea>
 
-            <div class="mb-3">
-                <label class="small text-secondary">Método de Pago</label>
-                <select id="metodoPago" class="form-select bg-dark text-white border-secondary">
-                    <option value="Efectivo">Efectivo</option>
-                    <option value="Transferencia">Transferencia</option>
-                </select>
-            </div>
+            <label class="small text-secondary">Método de Pago</label>
+            <select id="metodoPago" class="form-select bg-dark text-white border-secondary mb-3">
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+            </select>
 
-            <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold py-3 mt-2">GENERAR ORDEN</button>
+            <button onclick="enviarWhatsApp()" class="btn btn-info w-100 fw-bold py-3">ENVIAR POR WHATSAPP</button>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/patternlock@2.0.2/dist/patternlock.min.js"></script>
 <script>
-    // DATOS DE EJEMPLO (Aquí puedes pegar los de tu Excel)
+    // BASE DE DATOS (Muestra)
     const db = [
-        { cat: 'MODULOS', nombre: 'Módulo Moto G8 / G8 Play', precio: '$22.000' },
-        { cat: 'MODULOS', nombre: 'Módulo Samsung A32 4G (Oled)', precio: '$35.000' },
-        { cat: 'BATERIAS', nombre: 'Batería iPhone 11 (Premium)', precio: '$18.500' },
-        { cat: 'SOFTWARE', nombre: 'Cuenta Google Samsung (Todos los modelos)', precio: '$8.000' },
-        { cat: 'PARTES', nombre: 'Pin de Carga Moto G9 Power', precio: '$6.500' }
+        { cat: 'MODULOS', nombre: 'Samsung A02 (Incell)', precio: 8500 },
+        { cat: 'MODULOS', nombre: 'Samsung A32 4G (Oled)', precio: 15200 },
+        { cat: 'MODULOS', nombre: 'iPhone 11 (Incell)', precio: 12000 },
+        { cat: 'BATERIAS', nombre: 'Motorola G8 Power', precio: 4500 }
     ];
 
-    let currentCat = '';
-    let selectedProd = '';
-    let selectedPrice = '';
-    let lock;
+    let currentCat = '', selectedProd = '', selectedPrice = '', lock;
+
+    function calcularPrecioFinal(base, nombre) {
+        const costoEnvio = 15000;
+        const manoObraOtros = 20000;
+        const manoObraIphone = 50000;
+        const esIphone = nombre.toLowerCase().includes('iphone');
+        
+        let total = (base + costoEnvio) * 2;
+        total += (esIphone) ? manoObraIphone : manoObraOtros;
+        return total.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 });
+    }
 
     function showStep(s) {
-        [1,2,3].forEach(n => document.getElementById('step-'+n).classList.add('hidden'));
+        document.getElementById('step-1').classList.add('hidden');
+        document.getElementById('step-2').classList.add('hidden');
+        document.getElementById('step-3').classList.add('hidden');
         document.getElementById('step-'+s).classList.remove('hidden');
     }
 
     function chooseCategory(cat) {
         currentCat = cat;
-        document.getElementById('cat-selected').innerText = "Catálogo: " + cat;
+        document.getElementById('cat-selected').innerText = cat;
+        document.getElementById('search-area').classList.toggle('hidden', cat === 'SOFTWARE');
         showStep(2);
         filterProducts();
     }
@@ -136,33 +138,44 @@
         const lista = document.getElementById('productList');
         lista.innerHTML = '';
 
-        const filtrados = db.filter(p => p.cat === currentCat && p.nombre.toLowerCase().includes(busqueda));
+        if (currentCat === 'PARTES') {
+            addBtnManual("Pin de Carga Universal", "$30.000");
+        }
 
+        if (currentCat === 'SOFTWARE') {
+            addBtnManual("Cambio de Sistema Operativo", "$30.000");
+            addBtnManual("Eliminar cuenta Google", "$40.000");
+            addBtnManual("Eliminar Patron/Pin", "$20.000");
+            addBtnManual("Eliminar virus de publicidad", "$10.000");
+            return;
+        }
+
+        const filtrados = db.filter(p => p.cat === currentCat && p.nombre.toLowerCase().includes(busqueda));
         filtrados.forEach(p => {
-            const item = document.createElement('button');
-            item.className = 'list-group-item list-group-item-action';
-            item.innerHTML = `<div class="d-flex justify-content-between"><span>${p.nombre}</span> <b class="text-info">${p.precio}</b></div>`;
-            item.onclick = () => selectProduct(p.nombre, p.precio);
-            lista.appendChild(item);
+            const precioVenta = calcularPrecioFinal(p.precio, p.nombre);
+            addBtnManual(p.nombre, precioVenta);
         });
     }
 
-    function selectProduct(n, p) {
-        selectedProd = n;
-        selectedPrice = p;
-        document.getElementById('resumen-equipo').innerText = `Seleccionado: ${n} (${p})`;
-        showStep(3);
-        // Inicializar patrón si no existe
-        if(!lock) {
-            lock = new PatternLock("#patternContainer", {
-                onDraw: function(pattern){ console.log(pattern); }
-            });
-        }
+    function addBtnManual(nombre, precio) {
+        const item = document.createElement('button');
+        item.className = 'list-group-item list-group-item-action p-3';
+        item.innerHTML = `<div class="d-flex justify-content-between align-items-center">
+            <span>${nombre}</span> <span class="price-tag">${precio}</span>
+        </div>`;
+        item.onclick = () => {
+            selectedProd = nombre;
+            selectedPrice = precio;
+            document.getElementById('resumen-equipo').innerHTML = `<b>Equipo:</b> ${nombre}<br><b>Presupuesto:</b> ${precio}`;
+            showStep(3);
+            if(!lock) lock = new PatternLock("#patternContainer");
+        };
+        document.getElementById('productList').appendChild(item);
     }
 
     function toggleClave() {
         const t = document.getElementById('tipoClave').value;
-        document.getElementById('div-pin').classList.toggle('hidden', t !== 'PIN/PIN');
+        document.getElementById('div-pin').classList.toggle('hidden', t !== 'PIN');
         document.getElementById('div-patron').classList.toggle('hidden', t !== 'Patron');
     }
 
@@ -172,17 +185,15 @@
         const tipoC = document.getElementById('tipoClave').value;
         const det = document.getElementById('detalles').value;
         const pago = document.getElementById('metodoPago').value;
-        
-        let claveInfo = "No tiene";
-        if(tipoC === 'PIN/PIN') claveInfo = document.getElementById('valPin').value;
-        if(tipoC === 'Patron') claveInfo = "Dibujado - Obs: " + document.getElementById('valPatronDesc').value;
+        let claveInfo = (tipoC === 'PIN') ? document.getElementById('valPin').value : 
+                        (tipoC === 'Patron') ? "Dibujado (Obs: "+document.getElementById('valPatronDesc').value+")" : "No tiene";
 
         const msj = `*EA-INFORMATICA - ORDEN*%0A%0A` +
                     `👤 *Cliente:* ${cliente}%0A` +
                     `📱 *Equipo:* ${selectedProd}%0A` +
                     `💰 *Presupuesto:* ${selectedPrice}%0A` +
                     `🔑 *Seguridad:* ${claveInfo}%0A` +
-                    `📝 *Falla/Detalle:* ${det}%0A` +
+                    `📝 *Falla:* ${det}%0A` +
                     `💳 *Pago:* ${pago}`;
 
         window.open(`https://wa.me/${tel}?text=${msj}`, '_blank');
